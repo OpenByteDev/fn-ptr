@@ -12,7 +12,7 @@ env:
   RUSTFLAGS: "--deny warnings"
 
 jobs:
-  test:
+  build:
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
