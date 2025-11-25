@@ -61,7 +61,7 @@ macro_rules! impl_fn {
         impl_fn!(@impl_u_and_s ($($nm : $ty),*), "sysv64");
 
         // ARM conventions
-        #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
+        #[cfg(any(target_arch = "arm"))]
         impl_fn!(@impl_u_and_s ($($nm : $ty),*), "aapcs");
     };
 
