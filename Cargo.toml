@@ -1,0 +1,10 @@
+[package]
+name = "fn-ptr"
+version = "0.1.0"
+description = "A crate providing a function pointer trait."
+edition = "2024"
+license = "MIT"
+
+[dependencies]
+const_panic = "0.2"
+konst = "0.4"
