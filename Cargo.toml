@@ -13,7 +13,6 @@ konst = "0.4"
 static_assertions = "1.1"
 
 [features]
-# Enable generation of impls up to 12 arguments. Default is 6-arity support.
 max-arity-12 = []
 
 [build-dependencies]

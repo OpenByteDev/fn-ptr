@@ -1,7 +1,7 @@
 use core::{
     fmt::{Debug, Display},
+    marker::ConstParamTy,
     str::FromStr,
-    marker::ConstParamTy
 };
 
 use const_panic::concat_panic;
@@ -50,12 +50,60 @@ impl Abi {
     }
 }
 
+impl Abi {
+    /// Returns true if this ABI is an alias.
+    pub fn is_alias(&self) -> bool {
+        matches!(self, Abi::C | Abi::System)
+    }
+
+    /// Returns true if this ABI is a concrete ABI, not an alias.
+    pub fn is_concrete(&self) -> bool {
+        !self.is_alias()
+    }
+
+    /// Returns the concrete ABI for this ABI on the current target.
+    pub fn concrete(&self) -> Abi {
+        match self {
+            Abi::C => {
+                // "C" maps to platform default for C
+                if cfg!(target_os = "windows") && cfg!(target_arch = "x86_64") {
+                    Abi::Win64
+                } else if cfg!(target_arch = "x86_64") {
+                    Abi::Sysv64
+                } else if cfg!(target_arch = "x86") {
+                    Abi::Cdecl
+                } else if cfg!(target_arch = "arm") || cfg!(target_arch = "aarch64") {
+                    Abi::Aapcs
+                } else {
+                    Abi::Cdecl // fallback
+                }
+            }
+            Abi::System => {
+                if cfg!(target_os = "windows") && cfg!(target_arch = "x86_64") {
+                    Abi::Win64
+                } else if cfg!(target_os = "windows") && cfg!(target_arch = "x86") {
+                    Abi::Stdcall
+                } else if cfg!(target_arch = "x86_64") {
+                    Abi::Sysv64
+                } else if cfg!(target_arch = "x86") {
+                    Abi::Cdecl
+                } else if cfg!(target_arch = "arm") || cfg!(target_arch = "aarch64") {
+                    Abi::Aapcs
+                } else {
+                    Abi::Cdecl // fallback
+                }
+            }
+            other => *other,
+        }
+    }
+}
+
 impl FromStr for Abi {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "" | "Rust" => Ok(Abi::C),
+            "" | "Rust" => Ok(Abi::Rust),
             "C" => Ok(Abi::C),
             "system" => Ok(Abi::System),
             "win64" => Ok(Abi::Win64),
