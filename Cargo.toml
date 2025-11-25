@@ -8,3 +8,6 @@ license = "MIT"
 [dependencies]
 const_panic = "0.2"
 konst = "0.4"
+
+[dev-dependencies]
+static_assertions = "1.1"
