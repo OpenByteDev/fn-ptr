@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTDOCFLAGS: "--deny warnings"
+  RUSTFLAGS: "--deny warnings"
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain: ["beta"]
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu
+          - target: x86_64-pc-windows-msvc
+            os: windows
+          - target: i686-pc-windows-msvc
+            os: windows
+          - target: aarch64-apple-darwin
+            os: macos
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install latest ${{ matrix.toolchain }}
+      uses: dtolnay/rust-toolchain@stable
+      with:
+          target: ${{ matrix.target }}
+          toolchain: ${{ matrix.toolchain }}
+      
+    - name: Build
+      run: cargo build --target ${{ matrix.target }}
+      
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install latest nightly
+      uses: dtolnay/rust-toolchain@stable
+      with:
+          toolchain: nightly
+    - name: Generate documentation
+      run: cargo doc --all-features
+    - name: Install cargo-deadlinks
+      run: cargo install cargo-deadlinks
+    - name: Check dead links in doc
+      run: cargo deadlinks
+
+  clippy:
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu
+          - os: windows
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install latest nightly
+        uses: dtolnay/rust-toolchain@stable
+        with:
+            toolchain: nightly
+            components: clippy
+            
+      - name: Clippy check
+        run: cargo clippy --all-features
+          
+  fmt:
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu
+          - os: windows
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install latest nightly
+      uses: dtolnay/rust-toolchain@stable
+      with:
+          toolchain: nightly
+          components: rustfmt
+          
+    - name: Format check
+      run: cargo fmt --all -- --check
