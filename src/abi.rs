@@ -1,11 +1,12 @@
 use core::{
     fmt::{Debug, Display},
     str::FromStr,
+    marker::ConstParamTy
 };
 
 use const_panic::concat_panic;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, ConstParamTy)]
 /// The abi or calling convention of a function pointer.
 pub enum Abi {
     /// The default ABI when you write a normal `fn foo()` in any Rust code.
@@ -37,14 +38,14 @@ impl Abi {
         match self {
             Abi::Rust => "Rust",
             Abi::C => "C",
-            Abi::System => "System",
-            Abi::Win64 => "Win64",
-            Abi::Sysv64 => "Sysv64",
-            Abi::Aapcs => "Aapcs",
-            Abi::Cdecl => "Cdecl",
-            Abi::Stdcall => "Stdcall",
-            Abi::Fastcall => "Fastcall",
-            Abi::Vectorcall => "Vectorcall",
+            Abi::System => "system",
+            Abi::Win64 => "win64",
+            Abi::Sysv64 => "sysv64",
+            Abi::Aapcs => "aapcs",
+            Abi::Cdecl => "cdecl",
+            Abi::Stdcall => "stdcall",
+            Abi::Fastcall => "fastcall",
+            Abi::Vectorcall => "vectorcall",
         }
     }
 }

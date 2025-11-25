@@ -11,3 +11,21 @@ konst = "0.4"
 
 [dev-dependencies]
 static_assertions = "1.1"
+
+[features]
+# Enable generation of impls up to 12 arguments. Default is 6-arity support.
+max-arity-12 = []
+
+[build-dependencies]
+cargo-emit = "0.2"
+build-target = "0.4"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+	'cfg(has_abi_cdecl)',
+	'cfg(has_abi_stdcall)',
+	'cfg(has_abi_fastcall)',
+	'cfg(has_abi_win64)',
+	'cfg(has_abi_sysv64)',
+	'cfg(has_abi_aapcs)'
+]}
