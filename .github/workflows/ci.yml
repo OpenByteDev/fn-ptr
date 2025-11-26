@@ -55,19 +55,19 @@ jobs:
       - name: Build
         shell: pwsh
         run: |
-          if ($env:MATRIX_TOOLCHAIN -eq "stable") {
-              cargo build --target $env:MATRIX_TARGET --no-default-features
+          if ("${{ matrix.toolchain }}" -eq "stable") {
+              cargo build --target "${{ matrix.target }}" --no-default-features
           } else {
-              cargo build --target $env:MATRIX_TARGET --all-features
+              cargo build --target "${{ matrix.target }}" --all-features
           }
 
       - name: Test
         shell: pwsh
         run: |
-          if ($env:MATRIX_TOOLCHAIN -eq "stable") {
-              cargo test --target $env:MATRIX_TARGET --no-default-features
+          if ("${{ matrix.toolchain }}" -eq "stable") {
+              cargo test --target "${{ matrix.target }}" --no-default-features
           } else {
-              cargo test --target $env:MATRIX_TARGET --all-features
+              cargo test --target "${{ matrix.target }}" --all-features
           }
       
   documentation:
