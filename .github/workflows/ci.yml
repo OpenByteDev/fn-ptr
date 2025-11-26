@@ -12,12 +12,12 @@ env:
   RUSTFLAGS: "--deny warnings"
 
 jobs:
-  build:
+  test:
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
       matrix:
-        toolchain: ["beta"]
+        toolchain: ["stable", "nightly"]
         include:
           - target: x86_64-unknown-linux-gnu
             os: ubuntu
@@ -27,17 +27,31 @@ jobs:
             os: windows
           - target: aarch64-apple-darwin
             os: macos
-    steps:
-    - uses: actions/checkout@v4
 
-    - name: Install latest ${{ matrix.toolchain }}
-      uses: dtolnay/rust-toolchain@stable
-      with:
-          target: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
           toolchain: ${{ matrix.toolchain }}
-      
-    - name: Build
-      run: cargo build --target ${{ matrix.target }}
+          target: ${{ matrix.target }}
+
+      - name: Build
+        run: |
+          if [ "${{ matrix.toolchain }}" = "stable" ]; then
+            cargo build --target ${{ matrix.target }} --no-default-features
+          else
+            cargo build --target ${{ matrix.target }} --all-features
+          fi
+
+      - name: Test
+        run: |
+          if [ "${{ matrix.toolchain }}" = "stable" ]; then
+            cargo test --target ${{ matrix.target }} --no-default-features
+          else
+            cargo test --target ${{ matrix.target }} --all-features
+          fi
       
   documentation:
     runs-on: ubuntu-latest
