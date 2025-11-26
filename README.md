@@ -35,7 +35,7 @@ pub trait FnPtr {
 
 1. Function-pointer metadata
 
-Every function pointer automatically implements [FnPtr]. Depending on the type, it may also implement [SafeFnPtr], [UnsafeFnPtr], and [HasAbi<Abi>].
+Every function pointer automatically implements [`FnPtr`]. Depending on the type, it may also implement [`SafeFnPtr`], [`UnsafeFnPtr`], and [`HasAbi<Abi>`].
 
 ```rust
 use fn_ptr::{FnPtr, Abi};
