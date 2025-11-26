@@ -1,9 +1,9 @@
+#[cfg(feature = "nightly")]
+use core::marker::ConstParamTy;
 use core::{
     fmt::{Debug, Display},
     str::FromStr,
 };
-#[cfg(feature = "nightly")]
-use core::marker::ConstParamTy;
 
 use const_panic::concat_panic;
 

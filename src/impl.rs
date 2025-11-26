@@ -49,7 +49,7 @@ macro_rules! impl_fn {
             const ABI: $crate::Abi = $crate::Abi::$abi_ident;
         }
         impl<Ret: 'static, $($ty: 'static),*> $crate::SafeFnPtr for $fn_type {}
-        
+
         // WithSafety
         impl<Ret: 'static, $($ty: 'static),*> $crate::WithSafety<{true}, $fn_type> for $fn_type { type F = $fn_type; }
         impl<Ret: 'static, $($ty: 'static),*> $crate::WithSafety<{false}, $fn_type> for $fn_type { type F = unsafe extern $call_conv fn($($ty),*) -> Ret; }
@@ -88,7 +88,7 @@ macro_rules! impl_fn {
             const ABI: $crate::Abi = $crate::Abi::$abi_ident;
         }
         impl<Ret: 'static, $($ty: 'static),*> $crate::UnsafeFnPtr for $fn_type {}
-        
+
         // WithSafety
         impl<Ret: 'static, $($ty: 'static),*> $crate::WithSafety<{true}, $fn_type> for $fn_type { type F = extern $call_conv fn($($ty),*) -> Ret; }
         impl<Ret: 'static, $($ty: 'static),*> $crate::WithSafety<{false}, $fn_type> for $fn_type { type F = $fn_type; }
@@ -96,7 +96,7 @@ macro_rules! impl_fn {
         cfg_all!(feature = "nightly" {
             // HasAbi
             impl<Ret: 'static, $($ty: 'static),*> $crate::HasAbi<{$crate::Abi::$abi_ident}> for $fn_type {}
-            
+
             // WithAbi
             impl<Ret: 'static, $($ty: 'static),*> $crate::WithAbi<{$crate::Abi::Rust}, $fn_type> for $fn_type { type F = unsafe extern "Rust" fn($($ty),*) -> Ret; }
             impl<Ret: 'static, $($ty: 'static),*> $crate::WithAbi<{$crate::Abi::C}, $fn_type> for $fn_type { type F = unsafe extern "C" fn($($ty),*) -> Ret; }
