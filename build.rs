@@ -1,7 +1,7 @@
 use build_target::{Arch, Os};
 
 fn main() {
-    let t = build_target::target().unwrap();
+    let t = build_target::target();
 
     // x86: cdecl, stdcall and fastcall
     if t.arch == Arch::X86 {
@@ -20,7 +20,7 @@ fn main() {
     }
 
     // ARM (32-bit) has aapcs
-    if t.arch == Arch::ARM {
+    if t.arch == Arch::Arm {
         cargo_emit::rustc_cfg!("has_abi_aapcs");
     }
 }

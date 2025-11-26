@@ -19,7 +19,7 @@ max-arity-12 = []
 
 [build-dependencies]
 cargo-emit = "0.2"
-build-target = "0.4"
+build-target = "0.8"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
