@@ -1,6 +1,6 @@
 [package]
 name = "fn-ptr"
-version = "0.1.0"
+version = "0.2.0"
 description = "A crate providing a function pointer trait."
 edition = "2024"
 license = "MIT"
