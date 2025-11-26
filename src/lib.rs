@@ -1,4 +1,112 @@
-#![feature(adt_const_params)]
+#![cfg_attr(feature = "nightly", feature(adt_const_params))]
+//! # fn-ptr
+//!
+//! `fn-ptr` is a small utility crate that provides a [`FnPtr`] trait, implemented for all function pointer types:
+//! - `fn(T) -> U`
+//! - `unsafe fn(T) -> U`
+//! - `extern "C" fn(T)`
+//! - `unsafe extern "sysv64" fn() -> i32`
+//!
+//! The trait provides associated types and constants to introspect function pointer types at compile time.
+//!
+//! ```rust
+//! # use fn_ptr::Abi;
+//! #
+//! pub trait FnPtr {
+//!     /// The argument types as a tuple.
+//!     type Args;
+//!
+//!     /// The return type.
+//!     type Output;
+//!
+//!     /// The function's arity (number of arguments).
+//!     const ARITY: usize;
+//!
+//!     /// Whether the function pointer is safe (`fn`) or unsafe (`unsafe fn`).
+//!     const IS_SAFE: bool;
+//!
+//!     /// Whether the function pointer uses an extern calling convention.
+//!     const IS_EXTERN: bool;
+//!
+//!     /// The ABI associated with this function pointer.
+//!     const ABI: Abi;
+//! }
+//! ```
+//!
+//! ## Features
+//!
+//! ### 1. Function Pointer Metadata
+//!
+//! Every function pointer automatically implements [`FnPtr`]. Depending on the type, it may also implement [`SafeFnPtr`], [`UnsafeFnPtr`], and [`HasAbi<Abi>`].
+//!
+//! ```rust
+//! use fn_ptr::{FnPtr, Abi};
+//!
+//! type F = extern "C" fn(i32, i32) -> i32;
+//!
+//! assert_eq!(<F as FnPtr>::ARITY, 2);
+//! assert_eq!(<F as FnPtr>::IS_SAFE, true);
+//! assert_eq!(<F as FnPtr>::IS_EXTERN, true);
+//! assert_eq!(<F as FnPtr>::ABI, Abi::C);
+//! ```
+//!
+//! Const helper functions are also provided:
+//!
+//! ```rust
+//! # use fn_ptr::{FnPtr, Abi};
+//! # type F = extern "C" fn(i32, i32) -> i32;
+//! const A: usize = fn_ptr::arity::<F>();         // 2
+//! const SAFE: bool = fn_ptr::is_safe::<F>();     // true
+//! const EXT: bool = fn_ptr::is_extern::<F>();    // true
+//! const ABI: Abi = fn_ptr::abi::<F>();           // Abi::C
+//! ```
+//!
+//! ### 2. Changing ABIs at the Type Level
+//!
+//! You can change the ABI of a function pointer type using macros:
+//!
+//! ```rust
+//! # #[cfg(feature = "nightly")] {
+//! use fn_ptr::{with_abi, Abi};
+//!
+//! type F = extern "C" fn(i32) -> i32;
+//!
+//! type G = with_abi!(Abi::Sysv64, F);
+//! type H = with_abi!("C", extern "system" fn());
+//! }
+//! ```
+//!
+//! ### 3. Toggle Function Pointer Safety
+//!
+//! Macros are provided to make function pointers safe or unsafe:
+//!
+//! ```rust
+//! use fn_ptr::{make_safe, make_unsafe};
+//!
+//! type U = unsafe extern "C" fn(i32);
+//! type S = make_safe!(U);       // extern "C" fn(i32)
+//!
+//! type S2 = extern "C" fn(i32);
+//! type U2 = make_unsafe!(S2);   // unsafe extern "C" fn(i32)
+//! ```
+//!
+//! ## How It Works
+//!
+//! All macros rely on type-level traits [`WithAbi`] and [`WithSafety`]. Each trait exposes an associated type representing the transformed function pointer. You can use these traits directly for const generics or explicit type transformations:
+//!
+//! ```rust
+//! # #[cfg(feature = "nightly")] {
+//! use fn_ptr::{FnPtr, WithAbi, WithSafety, Abi};
+//!
+//! type F = extern "C" fn(i32);
+//! type G = <F as WithAbi<{Abi::Sysv64}, F>>::F;
+//! type U = <F as WithSafety<{false}, F>>::F;
+//! }
+//! ```
+//!
+//! ## License
+//!
+//! Licensed under the MIT license, see [LICENSE](./LICENSE) for details.
 
 use core::{
     fmt::{Debug, Pointer},
@@ -6,6 +114,7 @@ use core::{
     panic::{RefUnwindSafe, UnwindSafe},
 };
 
+/// Module containing the Abi abstraction.
 pub mod abi;
 pub use abi::Abi;
 
@@ -60,10 +169,12 @@ pub trait UnsafeFnPtr: FnPtr {}
 /// For example:
 /// - `HasAbi<Abi::C>` for `extern "C" fn(...)`
 /// - `HasAbi<Abi::Sysv64>` for `extern "sysv64" fn(...)`
+#[cfg(feature = "nightly")]
 pub trait HasAbi<const ABI: Abi>: FnPtr {}
 
 /// Computes the function pointer type obtained by changing the ABI
 /// while preserving arity, arguments, return type, and safety.
+#[cfg(feature = "nightly")]
 pub trait WithAbi<const ABI: Abi, F: FnPtr> {
     /// The function pointer type with the requested ABI (preserving safety and signature).
     type F: FnPtr;
@@ -101,7 +212,6 @@ pub const fn abi<F: FnPtr>() -> Abi {
     F::ABI
 }
 
-#[macro_export]
 /// Construct a function-pointer type identical to the given one but using
 /// the specified ABI.
 ///
@@ -121,6 +231,8 @@ pub const fn abi<F: FnPtr>() -> Abi {
 /// type H = with_abi!("C", extern "system" fn());
 /// // `H` is `extern "C" fn()`
 /// ```
+#[cfg(feature = "nightly")]
+#[cfg_attr(feature = "nightly", macro_export)]
 macro_rules! with_abi {
     // ABI given as a path (Abi::C, Abi::Sysv64, ...)
     ( $abi:path, $ty:ty ) => {
@@ -133,7 +245,6 @@ macro_rules! with_abi {
     };
 }
 
-#[macro_export]
 /// Convert a function-pointer type to the *safe* variant of the same
 /// signature. Arguments, return type, and ABI are preserved.
 ///
@@ -145,13 +256,13 @@ macro_rules! with_abi {
 /// type S = make_safe!(U);
 /// // `S` is `extern "C" fn(i32)`
 /// ```
+#[macro_export]
 macro_rules! make_safe {
     ( $ty:ty ) => {
         <$ty as $crate::WithSafety<{ true }, $ty>>::F
     };
 }
 
-#[macro_export]
 /// Convert a function-pointer type to the *unsafe* variant of the same
 /// signature. Arguments, return type, and ABI are preserved.
 ///
@@ -163,13 +274,13 @@ macro_rules! make_safe {
 /// type U = make_unsafe!(S);
 /// // `U` is `unsafe extern "C" fn(i32)`
 /// ```
+#[macro_export]
 macro_rules! make_unsafe {
     ( $ty:ty ) => {
         <$ty as $crate::WithSafety<{ false }, $ty>>::F
     };
 }
 
-#[macro_export]
 /// Convert a function-pointer type to an `extern` function that uses
 /// the specified ABI. Arguments, return type, and safety are preserved.
 ///
@@ -190,13 +301,14 @@ macro_rules! make_unsafe {
 /// with_abi!(Abi::C, F)
 /// # ;
 /// ```
+#[cfg(feature = "nightly")]
+#[cfg_attr(feature = "nightly", macro_export)]
 macro_rules! make_extern {
     ( $abi:path, $ty:ty ) => {
         $crate::with_abi!($abi, $ty)
     };
 }
 
-#[macro_export]
 /// Convert a function-pointer type to a Rust-ABI (`fn`) function while
 /// preserving its arguments, return type, and safety.
 ///
@@ -217,6 +329,8 @@ macro_rules! make_extern {
 /// with_abi!(Abi::Rust, F)
 /// # ;
 /// ```
+#[cfg(feature = "nightly")]
+#[cfg_attr(feature = "nightly", macro_export)]
 macro_rules! make_non_extern {
     ( $ty:ty ) => {
         $crate::with_abi!($crate::Abi::Rust, $ty)

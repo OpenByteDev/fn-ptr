@@ -1,12 +1,14 @@
 use core::{
     fmt::{Debug, Display},
-    marker::ConstParamTy,
     str::FromStr,
 };
+#[cfg(feature = "nightly")]
+use core::marker::ConstParamTy;
 
 use const_panic::concat_panic;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, ConstParamTy)]
+#[cfg_attr(feature = "nightly", derive(ConstParamTy))]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 /// The abi or calling convention of a function pointer.
 pub enum Abi {
     /// The default ABI when you write a normal `fn foo()` in any Rust code.
@@ -124,6 +126,7 @@ impl Display for Abi {
     }
 }
 
+/// Parse a string into an [`Abi`] if known, otherwise returns `None`.
 #[must_use]
 pub const fn parse(conv: &'static str) -> Option<Abi> {
     if konst::eq_str(conv, "") || konst::eq_str(conv, "Rust") {
@@ -151,6 +154,7 @@ pub const fn parse(conv: &'static str) -> Option<Abi> {
     }
 }
 
+/// Parse a string into an [`Abi`] and panic if unknown.
 #[must_use]
 pub const fn parse_or_fail(conv: &'static str) -> Abi {
     match parse(conv) {

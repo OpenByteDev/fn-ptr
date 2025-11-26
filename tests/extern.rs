@@ -1,19 +1,8 @@
-use fn_ptr::{Abi, FnPtr, with_abi};
+#![cfg(feature = "nightly")]
+
+use fn_ptr::with_abi;
 
 use static_assertions::assert_type_eq_all;
-
-#[test]
-fn no_ret() {
-    type F = fn(i32);
-
-    assert_type_eq_all!(<F as FnPtr>::Args, (i32,));
-    assert_type_eq_all!(<F as FnPtr>::Output, ());
-
-    assert_eq!(<F as FnPtr>::ARITY, 1);
-    assert!(<F as FnPtr>::IS_SAFE);
-    assert!(!<F as FnPtr>::IS_EXTERN);
-    assert_eq!(<F as FnPtr>::ABI, Abi::Rust);
-}
 
 #[test]
 fn with_c_abi() {

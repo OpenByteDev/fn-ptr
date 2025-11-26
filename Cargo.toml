@@ -13,6 +13,8 @@ konst = "0.4"
 static_assertions = "1.1"
 
 [features]
+default = ["nightly"]
+nightly = []
 max-arity-12 = []
 
 [build-dependencies]
