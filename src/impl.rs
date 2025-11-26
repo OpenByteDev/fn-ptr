@@ -129,6 +129,7 @@ macro_rules! impl_fn {
 }
 
 // Default: generate impls up to 6 arguments
+#[cfg(not(feature = "max-arity-12"))]
 impl_fn! {
     __arg_0:  A, __arg_1:  B, __arg_2:  C, __arg_3:  D, __arg_4:  E, __arg_5:  F
 }
