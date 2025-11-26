@@ -106,7 +106,7 @@
 //!
 //! ## License
 //!
-//! Licensed under the MIT license, see [LICENSE](./LICENSE) for details.
+//! Licensed under the MIT license, see [LICENSE](../LICENSE) for details.
 
 use core::{
     fmt::{Debug, Pointer},
