@@ -167,3 +167,15 @@ pub const fn parse_or_fail(conv: &'static str) -> Abi {
         concat_panic!("invalid or unknown abi", conv)
     }
 }
+
+#[cfg(feature = "nightly")]
+pub(crate) type AbiKey = Abi;
+#[cfg(not(feature = "nightly"))]
+pub(crate) type AbiKey = u8;
+
+#[must_use]
+/// Returns the value used to designate the given ABI in const generics.
+/// For stable or beta builds this returns an [`u8`], while on nightly the [`Abi`] instance is returned.
+pub const fn key(abi: Abi) -> AbiKey {
+    abi as _
+}

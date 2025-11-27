@@ -1,4 +1,4 @@
-#![cfg_attr(feature = "nightly", feature(adt_const_params))]
+#![cfg_attr(feature = "nightly", feature(adt_const_params, fn_ptr_trait))]
 #![warn(clippy::pedantic)]
 //! # fn-ptr
 //!
@@ -102,8 +102,8 @@
 //! use fn_ptr::{FnPtr, WithAbi, WithSafety, Abi};
 //!
 //! type F = extern "C" fn(i32);
-//! type G = <F as WithAbi<{Abi::Sysv64}, F>>::F;
-//! type U = <F as WithSafety<{false}, F>>::F;
+//! type G = <F as WithAbi<{Abi::Sysv64}>>::F;
+//! type U = <F as WithSafety<{false}>>::F;
 //! }
 //! ```
 //!
@@ -120,6 +120,7 @@ use core::{
 /// Module containing the Abi abstraction.
 pub mod abi;
 pub use abi::Abi;
+pub(crate) use abi::AbiKey;
 
 mod r#impl;
 
@@ -131,8 +132,83 @@ ffi_opaque::opaque! {
 /// Type alias for a raw untyped function pointer.
 pub type UntypedFnPtr = *const OpaqueFn;
 
-/// Marker trait for all function pointers.
-// list of implemented traits from https://rust.docs.kernel.org/core/primitive.fn.html#trait-implementations-1
+macro_rules! fnptr_trait_body {
+    () => {
+        /// The argument types as a tuple.
+        type Args;
+
+        /// The return type.
+        type Output;
+
+        /// The function's arity (number of arguments).
+        const ARITY: usize;
+
+        /// Whether the function pointer is safe (fn) or unsafe (unsafe fn).
+        const IS_SAFE: bool;
+
+        /// Whether the function pointer uses an extern calling convention.
+        const IS_EXTERN: bool;
+
+        /// The ABI associated with this function pointer.
+        const ABI: Abi;
+
+        /// Returns the address of this function.
+        #[must_use]
+        fn addr(&self) -> usize {
+            self.as_ptr() as usize
+        }
+        /// Constructs an instance from an address.
+        ///
+        /// # Safety
+        /// This function is unsafe because it can not check if the argument points to a function
+        /// of the correct type.
+        #[must_use]
+        unsafe fn from_addr(addr: usize) -> Self {
+            unsafe { Self::from_ptr(addr as UntypedFnPtr) }
+        }
+
+        /// Returns a untyped function pointer for this function.
+        #[must_use]
+        fn as_ptr(&self) -> UntypedFnPtr;
+        /// Constructs an instance from an untyped function pointer.
+        ///
+        /// # Safety
+        /// This function is unsafe because it can not check if the argument points to a function
+        /// of the correct type.
+        #[must_use]
+        unsafe fn from_ptr(ptr: UntypedFnPtr) -> Self;
+
+        /// Produces an unsafe version of this function pointer.
+        #[must_use]
+        fn as_unsafe(&self) -> make_unsafe!(Self) {
+            unsafe { FnPtr::from_ptr(self.as_ptr()) }
+        }
+
+        /// Produces a safe version of this function pointer.
+        ///
+        /// # Safety
+        /// Caller must ensure the underlying function is actually safe to call.
+        #[must_use]
+        unsafe fn as_safe(&self) -> make_safe!(Self) {
+            unsafe { FnPtr::from_ptr(self.as_ptr()) }
+        }
+
+        /// Produces a version of this function pointer with the given ABI.
+        ///
+        /// # Safety
+        /// Caller must ensure that the resulting ABI transformation is sound.
+        #[cfg(feature = "nightly")]
+        #[must_use]
+        unsafe fn with_abi<const ABI: AbiKey>(&self) -> <Self as WithAbi<ABI>>::F
+        where
+            Self: WithAbi<ABI>,
+        {
+            unsafe { FnPtr::from_ptr(self.as_ptr()) }
+        }
+    };
+}
+
+#[cfg(not(feature = "nightly"))]
 pub trait FnPtr:
     PartialEq
     + Eq
@@ -148,57 +224,49 @@ pub trait FnPtr:
     + Unpin
     + UnwindSafe
     + RefUnwindSafe
+    + Sized
     + 'static
+    + WithSafety<true>
+    + WithSafety<false>
+    + WithAbi<{ abi::key(Abi::Rust) }>
+    + WithAbi<{ abi::key(Abi::C) }>
+    + WithAbi<{ abi::key(Abi::System) }>
 {
-    /// The argument types as a tuple.
-    type Args;
+    fnptr_trait_body!();
+}
 
-    /// The return type.
-    type Output;
-
-    /// The function's arity (number of arguments).
-    const ARITY: usize;
-
-    /// Whether the function pointer is safe (`fn`) or unsafe (`unsafe fn`).
-    const IS_SAFE: bool;
-
-    /// Whether the function pointer uses an extern calling convention.
-    const IS_EXTERN: bool;
-
-    /// The ABI associated with this function pointer.
-    const ABI: Abi;
-
-    /// Returns the address of this function.
-    #[must_use]
-    fn addr(&self) -> usize {
-        self.as_ptr() as usize
-    }
-    /// Constructs an instance from an address.
-    ///
-    /// # Safety
-    /// This function is unsafe because it can not check if the argument points to a function
-    /// of the correct type.
-    #[must_use]
-    unsafe fn from_addr(addr: usize) -> Self {
-        unsafe { Self::from_ptr(addr as UntypedFnPtr) }
-    }
-
-    /// Returns a untyped function pointer for this function.
-    #[must_use]
-    fn as_ptr(&self) -> UntypedFnPtr;
-    /// Constructs an instance from an untyped function pointer.
-    ///
-    /// # Safety
-    /// This function is unsafe because it can not check if the argument points to a function
-    /// of the correct type.
-    #[must_use]
-    unsafe fn from_ptr(ptr: UntypedFnPtr) -> Self;
+#[cfg(feature = "nightly")]
+pub trait FnPtr:
+    PartialEq
+    + Eq
+    + PartialOrd
+    + Ord
+    + Hash
+    + Pointer
+    + Debug
+    + Clone
+    + Copy
+    + Send
+    + Sync
+    + Unpin
+    + UnwindSafe
+    + RefUnwindSafe
+    + Sized
+    + 'static
+    + WithSafety<true>
+    + WithSafety<false>
+    + WithAbi<{ Abi::Rust }>
+    + WithAbi<{ Abi::C }>
+    + WithAbi<{ Abi::System }>
+    + std::marker::FnPtr
+{
+    fnptr_trait_body!();
 }
 
 /// Marker trait for all *safe* function pointer types (`fn` / `extern fn`).
 pub trait SafeFnPtr: FnPtr {
     /// Invokes the function pointed to with the given args.
-    // NOTE: Can't use call due to fn_traits feature
+    // NOTE: Can't use "call" due to fn_traits feature
     fn invoke(&self, args: Self::Args) -> Self::Output;
 }
 
@@ -209,7 +277,7 @@ pub trait UnsafeFnPtr: FnPtr {
     /// # Safety
     /// Calling this function pointer is unsafe because the function may have
     /// invariants that must be manually upheld by the caller.
-    // NOTE: Can't use call due to fn_traits feature
+    // NOTE: Can't use "call" due to fn_traits feature
     unsafe fn invoke(&self, args: Self::Args) -> Self::Output;
 }
 
@@ -218,20 +286,18 @@ pub trait UnsafeFnPtr: FnPtr {
 /// For example:
 /// - `HasAbi<Abi::C>` for `extern "C" fn(...)`
 /// - `HasAbi<Abi::Sysv64>` for `extern "sysv64" fn(...)`
-#[cfg(feature = "nightly")]
-pub trait HasAbi<const ABI: Abi>: FnPtr {}
+pub trait HasAbi<const ABI: AbiKey>: FnPtr {}
 
 /// Computes the function pointer type obtained by changing the ABI
 /// while preserving arity, arguments, return type, and safety.
-#[cfg(feature = "nightly")]
-pub trait WithAbi<const ABI: Abi, F: FnPtr> {
+pub trait WithAbi<const ABI: AbiKey> {
     /// The function pointer type with the requested ABI (preserving safety and signature).
     type F: FnPtr;
 }
 
 /// Computes the function pointer type obtained by switching between safe/unsafe
 /// while preserving arity, ABI, and signature.
-pub trait WithSafety<const SAFE: bool, F: FnPtr> {
+pub trait WithSafety<const SAFE: bool> {
     /// The function pointer type with the requested safety (preserving ABI and signature).
     type F: FnPtr;
 }
@@ -285,17 +351,16 @@ pub const fn abi<F: FnPtr>() -> Abi {
 /// type H = with_abi!("C", extern "system" fn());
 /// // `H` is `extern "C" fn()`
 /// ```
-#[cfg(feature = "nightly")]
-#[cfg_attr(feature = "nightly", macro_export)]
+#[macro_export]
 macro_rules! with_abi {
     // ABI given as a path (Abi::C, Abi::Sysv64, ...)
     ( $abi:path, $ty:ty ) => {
-        <$ty as $crate::WithAbi<{ $abi }, $ty>>::F
+        <$ty as $crate::WithAbi<{ $crate::abi::key($abi) }>>::F
     };
 
     // ABI given as a string literal
     ( $abi_lit:literal, $ty:ty ) => {
-        <$ty as $crate::WithAbi<{ $crate::abi::parse_or_fail($abi_lit) }, $ty>>::F
+        <$ty as $crate::WithAbi<{ $crate::abi::key($crate::abi::parse_or_fail($abi_lit)) }>>::F
     };
 }
 
@@ -313,7 +378,7 @@ macro_rules! with_abi {
 #[macro_export]
 macro_rules! make_safe {
     ( $ty:ty ) => {
-        <$ty as $crate::WithSafety<{ true }, $ty>>::F
+        <$ty as $crate::WithSafety<{ true }>>::F
     };
 }
 
@@ -331,7 +396,7 @@ macro_rules! make_safe {
 #[macro_export]
 macro_rules! make_unsafe {
     ( $ty:ty ) => {
-        <$ty as $crate::WithSafety<{ false }, $ty>>::F
+        <$ty as $crate::WithSafety<{ false }>>::F
     };
 }
 
@@ -355,8 +420,7 @@ macro_rules! make_unsafe {
 /// with_abi!(Abi::C, F)
 /// # ;
 /// ```
-#[cfg(feature = "nightly")]
-#[cfg_attr(feature = "nightly", macro_export)]
+#[macro_export]
 macro_rules! make_extern {
     ( $abi:path, $ty:ty ) => {
         $crate::with_abi!($abi, $ty)
@@ -383,8 +447,7 @@ macro_rules! make_extern {
 /// with_abi!(Abi::Rust, F)
 /// # ;
 /// ```
-#[cfg(feature = "nightly")]
-#[cfg_attr(feature = "nightly", macro_export)]
+#[macro_export]
 macro_rules! make_non_extern {
     ( $ty:ty ) => {
         $crate::with_abi!($crate::Abi::Rust, $ty)

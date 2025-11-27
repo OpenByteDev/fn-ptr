@@ -87,8 +87,8 @@ All macros rely on type-level traits [`WithAbi`](https://docs.rs/fn-ptr/latest/f
 use fn_ptr::{FnPtr, WithAbi, WithSafety, Abi};
 
 type F = extern "C" fn(i32);
-type G = <F as WithAbi<{Abi::Sysv64}, F>>::F;
-type U = <F as WithSafety<{false}, F>>::F;
+type G = <F as WithAbi<{Abi::Sysv64}>>::F;
+type U = <F as WithSafety<{false}>>::F;
 ```
 
 ## License
