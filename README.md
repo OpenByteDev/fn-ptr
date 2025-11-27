@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/OpenByteDev/fn-ptr/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenByteDev/fn-ptr/actions/workflows/ci.yml) [![crates.io](https://img.shields.io/crates/v/fn-ptr.svg)](https://crates.io/crates/fn-ptr) [![Documentation](https://docs.rs/fn-ptr/badge.svg)](https://docs.rs/fn-ptr) [![dependency status](https://deps.rs/repo/github/openbytedev/fn-ptr/status.svg)](https://deps.rs/repo/github/openbytedev/fn-ptr) [![MIT](https://img.shields.io/crates/l/fn-ptr.svg)](https://github.com/OpenByteDev/fn-ptr/blob/master/LICENSE)
 
-`fn-ptr` is a small utility crate that provides a `FnPtr` trait, implemented for all function pointer types:
+`fn-ptr` is a small utility crate that provides a [`FnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.FnPtr.html) trait, implemented for all function pointer types:
 - `fn(T) -> U`
 - `unsafe fn(T) -> U`
 - `extern "C" fn(T)`
@@ -35,7 +35,7 @@ pub trait FnPtr {
 
 1. Function-pointer metadata
 
-Every function pointer automatically implements [`FnPtr`]. Depending on the type, it may also implement [`SafeFnPtr`], [`UnsafeFnPtr`], and [`HasAbi<Abi>`].
+Every function pointer automatically implements [`FnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.FnPtr.html). Depending on the type, it may also implement [`SafeFnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.SafeFnPtr.html), [`UnsafeFnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.UnsafeFnPtr.html), and [`HasAbi<Abi>`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.HasAbi.html).
 
 ```rust
 use fn_ptr::{FnPtr, Abi};
@@ -53,10 +53,11 @@ Const helper functions are also provided:
 const A: usize = fn_ptr::arity::<F>();         // 2
 const SAFE: bool = fn_ptr::is_safe::<F>();     // true
 const EXT: bool = fn_ptr::is_extern::<F>();    // true
-const ABI: Abi = fn_ptr::abi::<F>();      // Abi::C
+const ABI: Abi = fn_ptr::abi::<F>();           // Abi::C
 ```
 
 2. Changing ABIs at the type level
+
 You can change the ABI of a function pointer type using macros:
 ```rust
 use fn_ptr::{with_abi, Abi};
@@ -68,6 +69,7 @@ type H = with_abi!("C", extern "system" fn());
 ```
 
 3. Toggle function pointer safety
+
 Macros are provided to make function pointers safe or unsafe:
 ```rust
 use fn_ptr::{make_safe, make_unsafe};
@@ -79,8 +81,7 @@ type S2 = extern "C" fn(i32);
 type U2 = make_unsafe!(S2);   // unsafe extern "C" fn(i32)
 ```
 
-## How it works under the hood
-All macros rely on type-level traits [`WithAbi`] and [`WithSafety`]. Each trait exposes an associated type representing the transformed function pointer.
+All macros rely on type-level traits [`WithAbi`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.WithAbi.html) and [`WithSafety`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.WithSafety.html). 
 
 ```rust
 use fn_ptr::{FnPtr, WithAbi, WithSafety, Abi};
