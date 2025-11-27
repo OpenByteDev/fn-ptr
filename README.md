@@ -2,40 +2,21 @@
 
 [![CI](https://github.com/OpenByteDev/fn-ptr/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenByteDev/fn-ptr/actions/workflows/ci.yml) [![crates.io](https://img.shields.io/crates/v/fn-ptr.svg)](https://crates.io/crates/fn-ptr) [![Documentation](https://docs.rs/fn-ptr/badge.svg)](https://docs.rs/fn-ptr) [![dependency status](https://deps.rs/repo/github/openbytedev/fn-ptr/status.svg)](https://deps.rs/repo/github/openbytedev/fn-ptr) [![MIT](https://img.shields.io/crates/l/fn-ptr.svg)](https://github.com/OpenByteDev/fn-ptr/blob/master/LICENSE)
 
-`fn-ptr` is a small utility crate that provides a [`FnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.FnPtr.html) trait, implemented for all function pointer types:
+`fn-ptr` is a small utility crate that provides a [`FnPtr`] trait, implemented for all function pointer types:
 - `fn(T) -> U`
 - `unsafe fn(T) -> U`
 - `extern "C" fn(T)`
 - `unsafe extern "sysv64" fn() -> i32`
 
 The trait provides associated types and constants to introspect function pointer types at compile time.
-```rust
-pub trait FnPtr {
-    /// The argument types as a tuple.
-    type Args;
-
-    /// The return type.
-    type Output;
-
-    /// The function's arity (number of arguments).
-    const ARITY: usize;
-
-    /// Whether the function pointer is safe (`fn`) or unsafe (`unsafe fn`).
-    const IS_SAFE: bool;
-
-    /// Whether the function pointer uses an extern calling convention.
-    const IS_EXTERN: bool;
-
-    /// The ABI associated with this function pointer.
-    const ABI: Abi;
-}
-```
 
 ## Features
 
-1. Function-pointer metadata
+### 1. Function Pointer Metadata
 
-Every function pointer automatically implements [`FnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.FnPtr.html). Depending on the type, it may also implement [`SafeFnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.SafeFnPtr.html), [`UnsafeFnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.UnsafeFnPtr.html), and [`HasAbi<Abi>`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.HasAbi.html).
+Every function pointer automatically implements [`FnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.FnPtr.html).
+Depending on the type, they also implement [`SafeFnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.SafeFnPtr.html),, [`UnsafeFnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.UnsafeFnPtr.html), and [`HasAbi<Abi>`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.HasAbi.html).
+With it you can inspect the type of function:
 
 ```rust
 use fn_ptr::{FnPtr, Abi};
@@ -48,29 +29,21 @@ assert_eq!(<F as FnPtr>::IS_EXTERN, true);
 assert_eq!(<F as FnPtr>::ABI, Abi::C);
 ```
 
-Const helper functions are also provided:
+There are also some const helper functons to do so ergonomically.
+
 ```rust
+# type F = extern "C" fn(i32, i32) -> i32;
+# use fn_ptr::{FnPtr, Abi};
 const A: usize = fn_ptr::arity::<F>();         // 2
 const SAFE: bool = fn_ptr::is_safe::<F>();     // true
 const EXT: bool = fn_ptr::is_extern::<F>();    // true
 const ABI: Abi = fn_ptr::abi::<F>();           // Abi::C
 ```
 
-2. Changing ABIs at the type level
+### 2. Toggle Function Pointer Safety
 
-You can change the ABI of a function pointer type using macros:
-```rust
-use fn_ptr::{with_abi, Abi};
+You can toggle the safety of a function pointer at the type level:
 
-type F = extern "C" fn(i32) -> i32;
-
-type G = with_abi!(Abi::Sysv64, F);
-type H = with_abi!("C", extern "system" fn());
-```
-
-3. Toggle function pointer safety
-
-Macros are provided to make function pointers safe or unsafe:
 ```rust
 use fn_ptr::{make_safe, make_unsafe};
 
@@ -81,15 +54,72 @@ type S2 = extern "C" fn(i32);
 type U2 = make_unsafe!(S2);   // unsafe extern "C" fn(i32)
 ```
 
-All macros rely on type-level traits [`WithAbi`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.WithAbi.html) and [`WithSafety`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.WithSafety.html). 
+Or at the instance level:
 
 ```rust
+# use fn_ptr::FnPtr;
+let safe_add: fn(i32, i32) -> i32 = |a, b| {a + b};
+let unsafe_add: unsafe fn(i32, i32) -> i32 = safe_add.as_unsafe();
+let safe_add2: fn(i32, i32) -> i32 = unsafe { unsafe_add.as_safe() };
+# assert_eq!(safe_add.addr(), safe_add2.addr());
+```
+
+### 3. Changing ABIs
+
+You can also change the ABI of a function pointer at the type level:
+
+```rust
+# #[cfg(nightly_build)] {
+use fn_ptr::{with_abi, Abi};
+
+type F = extern "C" fn(i32) -> i32;
+
+type G = with_abi!(Abi::Sysv64, F);
+type H = with_abi!("C", extern "system" fn());
+# }
+```
+
+Or at the instance level:
+
+```rust
+# use fn_ptr::{FnPtr, Abi, abi::key};
+let rust_add: fn(i32, i32) -> i32 = |a, b| {a + b};
+# #[cfg(nightly_build)]
+// Safety: not actually safe!
+let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{Abi::C}>() };
+# #[cfg(not(feature = "nightly"))]
+# let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{key(Abi::C)}>() };
+# assert_eq!(rust_add.addr(), c_add.addr());
+```
+
+Note that this does not change the underlying ABI and should be used with caution.
+Also since arbitrary const generic types are unstable the code above only works on nightly, and requires converting
+the ABI to an [`u8`] on stable:
+```rust
+# use fn_ptr::{FnPtr, Abi};
+# let rust_add: fn(i32, i32) -> i32 = |a, b| {a + b};
+// Always works
+let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{fn_ptr::abi::key(Abi::C)}>() };
+// Works only on stable or beta
+let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{Abi::C as u8}>() };
+# assert_eq!(rust_add.addr(), c_add.addr());
+```
+
+## How It Works
+
+To implement the traits for all function pointer types, there is a large [macro](https://github.com/OpenByteDev/fn-ptr/blob/master/src/impl.rs).
+For the conversion macros the crate relies on two traits: [`WithAbi`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.WithAbi.html) and [`WithSafety`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.WithSafety.html) that can also be used directly:
+
+```rust
+# #[cfg(nightly_build)] {
 use fn_ptr::{FnPtr, WithAbi, WithSafety, Abi};
 
 type F = extern "C" fn(i32);
 type G = <F as WithAbi<{Abi::Sysv64}>>::F;
 type U = <F as WithSafety<{false}>>::F;
+# }
 ```
 
 ## License
-Licensed under the MIT license, see [LICENSE](./LICENSE) for details.
+
+Licensed under the MIT license, see [LICENSE](https://github.com/OpenByteDev/fn-ptr/blob/master/LICENSE) for details.
