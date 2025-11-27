@@ -265,6 +265,17 @@ pub trait FnPtr:
 /// Marker trait for all *safe* function pointer types (`fn` / `extern fn`).
 pub trait SafeFnPtr: FnPtr {
     /// Invokes the function pointed to with the given args.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use fn_ptr::SafeFnPtr;
+    /// fn add(a: i32, b: i32) -> i32 { a + b }
+    ///
+    /// let f: fn(i32, i32) -> i32 = add;
+    /// let result = f.invoke((2, 3));
+    /// assert_eq!(result, 5);
+    /// ```
     // NOTE: Can't use "call" due to fn_traits feature
     fn invoke(&self, args: Self::Args) -> Self::Output;
 }
@@ -276,6 +287,17 @@ pub trait UnsafeFnPtr: FnPtr {
     /// # Safety
     /// Calling this function pointer is unsafe because the function may have
     /// invariants that must be manually upheld by the caller.
+    /// 
+    /// # Examples
+    ///
+    /// ```
+    /// # use fn_ptr::UnsafeFnPtr;
+    /// unsafe fn add(a: *const i32, b: *const i32) -> i32 { *a + *b }
+    ///
+    /// let f: unsafe fn(*const i32, *const i32) -> i32 = add;
+    /// let result = unsafe { f.invoke((&2, &3)) };
+    /// assert_eq!(result, 5);
+    /// ```
     // NOTE: Can't use "call" due to fn_traits feature
     unsafe fn invoke(&self, args: Self::Args) -> Self::Output;
 }
@@ -309,7 +331,6 @@ pub trait WithSafety<const SAFE: bool> {
     /// The function pointer type with the requested safety (preserving ABI and signature).
     type F: FnPtr + HasSafety<SAFE>;
 }
-
 
 /// Returns the number of arguments of a function pointer type.
 #[must_use]
@@ -489,3 +510,4 @@ macro_rules! abi {
         $crate::abi::key($crate::abi::parse_or_fail($abi))
     };
 }
+
