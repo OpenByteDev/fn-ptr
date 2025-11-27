@@ -1,4 +1,6 @@
-use fn_ptr::{Abi, FnPtr, abi, arity, is_extern, is_safe, is_unsafe};
+#![allow(unpredictable_function_pointer_comparisons)]
+
+use fn_ptr::{Abi, FnPtr, SafeFnPtr, UnsafeFnPtr, abi, arity, is_extern, is_safe, is_unsafe};
 
 use static_assertions::assert_type_eq_all;
 
@@ -65,4 +67,66 @@ fn no_ret() {
     assert!(is_safe::<F>());
     assert!(!is_extern::<F>());
     assert_eq!(abi::<F>(), Abi::Rust);
+}
+
+#[test]
+fn addr_and_from_addr() {
+    fn add(a: i32, b: i32) -> i32 {
+        a + b
+    }
+
+    type F = fn(i32, i32) -> i32;
+    let f: F = add;
+
+    let addr = f.addr();
+    assert_ne!(addr, 0);
+
+    let f2: F = unsafe { F::from_addr(addr) };
+    assert_eq!(f2.addr(), addr);
+    assert_eq!(f, f2);
+}
+
+#[test]
+fn as_ptr_and_from_ptr() {
+    unsafe fn mul(a: i32, b: i32) -> i32 {
+        a * b
+    }
+
+    type F = unsafe fn(i32, i32) -> i32;
+    let f: F = mul;
+
+    let ptr = f.as_ptr();
+    assert!(!ptr.is_null());
+
+    let f2: F = unsafe { F::from_ptr(ptr) };
+    assert_eq!(f2.as_ptr(), ptr);
+    assert_eq!(f, f2);
+}
+
+#[test]
+fn invoke_safe_fnptr() {
+    fn square(x: i32) -> i32 {
+        x * x
+    }
+
+    type F = fn(i32) -> i32;
+    let f: F = square;
+
+    assert_eq!(f.invoke((5,)), 25);
+    assert_eq!(f.invoke((0,)), 0);
+}
+
+#[test]
+fn invoke_unsafe_fnptr() {
+    unsafe fn negate(x: i32) -> i32 {
+        -x
+    }
+
+    type F = unsafe fn(i32) -> i32;
+    let f: F = negate;
+
+    unsafe {
+        assert_eq!(f.invoke((10,)), -10);
+        assert_eq!(f.invoke((0,)), 0);
+    }
 }
