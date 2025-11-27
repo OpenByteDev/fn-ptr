@@ -32,8 +32,6 @@ assert_eq!(<F as FnPtr>::ABI, Abi::C);
 There are also some const helper functons to do so ergonomically.
 
 ```rust
-# type F = extern "C" fn(i32, i32) -> i32;
-# use fn_ptr::{FnPtr, Abi};
 const A: usize = fn_ptr::arity::<F>();         // 2
 const SAFE: bool = fn_ptr::is_safe::<F>();     // true
 const EXT: bool = fn_ptr::is_extern::<F>();    // true
@@ -57,11 +55,9 @@ type U2 = make_unsafe!(S2);   // unsafe extern "C" fn(i32)
 Or at the instance level:
 
 ```rust
-# use fn_ptr::FnPtr;
 let safe_add: fn(i32, i32) -> i32 = |a, b| {a + b};
 let unsafe_add: unsafe fn(i32, i32) -> i32 = safe_add.as_unsafe();
 let safe_add2: fn(i32, i32) -> i32 = unsafe { unsafe_add.as_safe() };
-# assert_eq!(safe_add.addr(), safe_add2.addr());
 ```
 
 ### 3. Changing ABIs
@@ -69,40 +65,30 @@ let safe_add2: fn(i32, i32) -> i32 = unsafe { unsafe_add.as_safe() };
 You can also change the ABI of a function pointer at the type level:
 
 ```rust
-# #[cfg(nightly_build)] {
 use fn_ptr::{with_abi, Abi};
 
 type F = extern "C" fn(i32) -> i32;
 
 type G = with_abi!(Abi::Sysv64, F);
 type H = with_abi!("C", extern "system" fn());
-# }
 ```
 
 Or at the instance level:
 
 ```rust
-# use fn_ptr::{FnPtr, Abi, abi::key};
 let rust_add: fn(i32, i32) -> i32 = |a, b| {a + b};
-# #[cfg(nightly_build)]
 // Safety: not actually safe!
 let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{Abi::C}>() };
-# #[cfg(not(feature = "nightly"))]
-# let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{key(Abi::C)}>() };
-# assert_eq!(rust_add.addr(), c_add.addr());
 ```
 
 Note that this does not change the underlying ABI and should be used with caution.
 Also since arbitrary const generic types are unstable the code above only works on nightly, and requires converting
 the ABI to an [`u8`] on stable:
 ```rust
-# use fn_ptr::{FnPtr, Abi};
-# let rust_add: fn(i32, i32) -> i32 = |a, b| {a + b};
 // Always works
 let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{fn_ptr::abi::key(Abi::C)}>() };
 // Works only on stable or beta
 let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{Abi::C as u8}>() };
-# assert_eq!(rust_add.addr(), c_add.addr());
 ```
 
 ## How It Works
@@ -111,13 +97,11 @@ To implement the traits for all function pointer types, there is a large [macro]
 For the conversion macros the crate relies on two traits: [`WithAbi`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.WithAbi.html) and [`WithSafety`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.WithSafety.html) that can also be used directly:
 
 ```rust
-# #[cfg(nightly_build)] {
 use fn_ptr::{FnPtr, WithAbi, WithSafety, Abi};
 
 type F = extern "C" fn(i32);
 type G = <F as WithAbi<{Abi::Sysv64}>>::F;
 type U = <F as WithSafety<{false}>>::F;
-# }
 ```
 
 ## License
