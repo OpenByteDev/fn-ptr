@@ -1,5 +1,3 @@
-#![cfg(nightly_build)]
-
 use fn_ptr::with_abi;
 
 use static_assertions::assert_type_eq_all;
