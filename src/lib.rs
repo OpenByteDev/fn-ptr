@@ -1,4 +1,5 @@
 #![cfg_attr(feature = "nightly", feature(adt_const_params))]
+#![warn(clippy::pedantic)]
 //! # fn-ptr
 //!
 //! `fn-ptr` is a small utility crate that provides a [`FnPtr`] trait, implemented for all function pointer types:
@@ -236,26 +237,31 @@ pub trait WithSafety<const SAFE: bool, F: FnPtr> {
 }
 
 /// Returns the number of arguments of a function pointer type.
+#[must_use]
 pub const fn arity<F: FnPtr>() -> usize {
     F::ARITY
 }
 
 /// Returns `true` for safe function pointers (`fn`).
+#[must_use]
 pub const fn is_safe<F: FnPtr>() -> bool {
     F::IS_SAFE
 }
 
 /// Returns `true` for unsafe function pointers (`unsafe fn`).
+#[must_use]
 pub const fn is_unsafe<F: FnPtr>() -> bool {
     !is_safe::<F>()
 }
 
 /// Returns `true` if the function pointer uses an extern ABI.
+#[must_use]
 pub const fn is_extern<F: FnPtr>() -> bool {
     F::IS_EXTERN
 }
 
 /// Returns the ABI of the function pointer.
+#[must_use]
 pub const fn abi<F: FnPtr>() -> Abi {
     F::ABI
 }

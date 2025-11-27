@@ -7,30 +7,31 @@ use core::{
 
 use const_panic::concat_panic;
 
+/// The abi or calling convention of a function pointer.
+#[repr(u8)]
 #[cfg_attr(feature = "nightly", derive(ConstParamTy))]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-/// The abi or calling convention of a function pointer.
 pub enum Abi {
     /// The default ABI when you write a normal `fn foo()` in any Rust code.
-    Rust,
+    Rust = 0,
     /// This is the same as `extern fn foo()`; whatever the default your C compiler supports.
-    C,
+    C = 1,
     /// Usually the same as [`extern "C"`](Abi::C), except on Win32, in which case it's [`"stdcall"`](Abi::Stdcall), or what you should use to link to the Windows API itself.
-    System,
-    /// The default for C code on x86_64 Windows.
-    Win64,
-    /// The default for C code on non-Windows x86_64.
-    Sysv64,
+    System = 2,
+    /// The default for C code on `x86_64` Windows.
+    Win64 = 3,
+    /// The default for C code on non-Windows `x86_64`.
+    Sysv64 = 4,
     /// The default for ARM.
-    Aapcs,
-    /// The default for x86_32 C code.
-    Cdecl,
-    /// The default for the Win32 API on x86_32.
-    Stdcall,
+    Aapcs = 5,
+    /// The default for `x86_32` C code.
+    Cdecl = 6,
+    /// The default for the Win32 API on `x86_32`.
+    Stdcall = 7,
     /// The `fastcall` ABI -- corresponds to MSVC's `__fastcall` and GCC and clang's `__attribute__((fastcall))`
-    Fastcall,
+    Fastcall = 8,
     /// The `vectorcall` ABI -- corresponds to MSVC's `__vectorcall` and GCC and clang's `__attribute__((vectorcall))`
-    Vectorcall,
+    Vectorcall = 9,
 }
 
 impl Abi {
@@ -54,16 +55,19 @@ impl Abi {
 
 impl Abi {
     /// Returns true if this ABI is an alias.
+    #[must_use]
     pub fn is_alias(&self) -> bool {
         matches!(self, Abi::C | Abi::System)
     }
 
     /// Returns true if this ABI is a concrete ABI, not an alias.
+    #[must_use]
     pub fn is_concrete(&self) -> bool {
         !self.is_alias()
     }
 
     /// Returns the concrete ABI for this ABI on the current target.
+    #[must_use]
     pub fn concrete(&self) -> Abi {
         match self {
             Abi::C => {
@@ -157,8 +161,9 @@ pub const fn parse(conv: &'static str) -> Option<Abi> {
 /// Parse a string into an [`Abi`] and panic if unknown.
 #[must_use]
 pub const fn parse_or_fail(conv: &'static str) -> Abi {
-    match parse(conv) {
-        Some(c) => c,
-        None => concat_panic!("invalid or unknown abi", conv),
+    if let Some(c) = parse(conv) {
+        c
+    } else {
+        concat_panic!("invalid or unknown abi", conv)
     }
 }
