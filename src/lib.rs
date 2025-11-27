@@ -122,6 +122,7 @@ pub use abi::Abi;
 pub(crate) use abi::AbiKey;
 
 mod r#impl;
+pub mod prelude;
 
 ffi_opaque::opaque! {
     /// A struct representing an opaque function.
