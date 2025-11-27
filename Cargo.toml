@@ -7,6 +7,7 @@ license = "MIT"
 
 [dependencies]
 const_panic = "0.2"
+ffi-opaque = "2.0.1"
 konst = "0.4"
 
 [dev-dependencies]

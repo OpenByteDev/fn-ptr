@@ -120,6 +120,14 @@ pub use abi::Abi;
 
 mod r#impl;
 
+ffi_opaque::opaque! {
+    /// A struct representing an opaque function.
+    pub struct OpaqueFn;
+}
+
+/// Type alias for a raw untyped function pointer.
+pub type UntypedFnPtr = *const OpaqueFn;
+
 /// Marker trait for all function pointers.
 // list of implemented traits from https://rust.docs.kernel.org/core/primitive.fn.html#trait-implementations-1
 pub trait FnPtr:
@@ -156,13 +164,51 @@ pub trait FnPtr:
 
     /// The ABI associated with this function pointer.
     const ABI: Abi;
+
+    /// Returns the address of this function.
+    #[must_use]
+    fn addr(&self) -> usize {
+        self.as_ptr() as usize
+    }
+    /// Constructs an instance from an address.
+    ///
+    /// # Safety
+    /// This function is unsafe because it can not check if the argument points to a function
+    /// of the correct type.
+    #[must_use]
+    unsafe fn from_addr(addr: usize) -> Self {
+        unsafe { Self::from_ptr(addr as UntypedFnPtr) }
+    }
+
+    /// Returns a untyped function pointer for this function.
+    #[must_use]
+    fn as_ptr(&self) -> UntypedFnPtr;
+    /// Constructs an instance from an untyped function pointer.
+    ///
+    /// # Safety
+    /// This function is unsafe because it can not check if the argument points to a function
+    /// of the correct type.
+    #[must_use]
+    unsafe fn from_ptr(ptr: UntypedFnPtr) -> Self;
 }
 
 /// Marker trait for all *safe* function pointer types (`fn` / `extern fn`).
-pub trait SafeFnPtr: FnPtr {}
+pub trait SafeFnPtr: FnPtr {
+    /// Invokes the function pointed to with the given args.
+    // NOTE: Can't use call due to fn_traits feature
+    fn invoke(&self, args: Self::Args) -> Self::Output;
+}
 
 /// Marker trait for all *unsafe* function pointer types (`unsafe fn` / `unsafe extern fn`).
-pub trait UnsafeFnPtr: FnPtr {}
+pub trait UnsafeFnPtr: FnPtr {
+    /// Invokes the function pointed to with the given args.
+    ///
+    /// # Safety
+    /// Calling this function pointer is unsafe because the function may have
+    /// invariants that must be manually upheld by the caller.
+    // NOTE: Can't use call due to fn_traits feature
+    unsafe fn invoke(&self, args: Self::Args) -> Self::Output;
+}
 
 /// Marker trait implemented for extern function pointers of a specific ABI.
 ///
