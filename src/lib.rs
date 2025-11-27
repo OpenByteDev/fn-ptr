@@ -294,7 +294,7 @@ pub trait UnsafeFnPtr: FnPtr {
     unsafe fn invoke(&self, args: Self::Args) -> Self::Output;
 }
 
-/// Marker trait implemented for extern function pointers of a specific ABI.
+/// Marker trait implemented for function pointers of a specific ABI.
 ///
 /// For example:
 /// - `HasAbi<Abi::C>` for `extern "C" fn(...)`
@@ -305,15 +305,25 @@ pub trait HasAbi<const ABI: AbiKey>: FnPtr {}
 /// while preserving arity, arguments, return type, and safety.
 pub trait WithAbi<const ABI: AbiKey> {
     /// The function pointer type with the requested ABI (preserving safety and signature).
-    type F: FnPtr;
+    type F: FnPtr + HasAbi<ABI>;
 }
+
+/// Marker trait denoting the safety of a function pointer type.
+///
+/// For example:
+/// - `HasSafety<true>` for `extern "C" fn(...)`
+/// - `HasSafety<false>` for `unsafe fn(...)`
+pub trait HasSafety<const B: bool> {}
+impl<T: SafeFnPtr> HasSafety<true> for T {}
+impl<T: UnsafeFnPtr> HasSafety<false> for T {}
 
 /// Computes the function pointer type obtained by switching between safe/unsafe
 /// while preserving arity, ABI, and signature.
 pub trait WithSafety<const SAFE: bool> {
     /// The function pointer type with the requested safety (preserving ABI and signature).
-    type F: FnPtr;
+    type F: FnPtr + HasSafety<SAFE>;
 }
+
 
 /// Returns the number of arguments of a function pointer type.
 #[must_use]
