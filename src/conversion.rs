@@ -14,7 +14,6 @@ pub trait WithSafety<const SAFE: bool> {
     type F: FnPtr + HasSafety<SAFE>;
 }
 
-
 /// Construct a function-pointer type identical to the given one but using
 /// the specified ABI.
 ///

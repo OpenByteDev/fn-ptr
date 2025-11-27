@@ -4,7 +4,11 @@ use core::{
     panic::{RefUnwindSafe, UnwindSafe},
 };
 
-use crate::{abi::{AbiKey, Abi}, WithAbi, WithSafety, abi, make_unsafe, make_safe};
+use crate::{
+    WithAbi, WithSafety, abi,
+    abi::{Abi, AbiKey},
+    make_safe, make_unsafe,
+};
 
 ffi_opaque::opaque! {
     /// A struct representing an opaque function.
@@ -170,7 +174,7 @@ pub trait UnsafeFnPtr: FnPtr {
     /// # Safety
     /// Calling this function pointer is unsafe because the function may have
     /// invariants that must be manually upheld by the caller.
-    /// 
+    ///
     /// # Examples
     ///
     /// ```
