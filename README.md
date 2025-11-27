@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/OpenByteDev/fn-ptr/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenByteDev/fn-ptr/actions/workflows/ci.yml) [![crates.io](https://img.shields.io/crates/v/fn-ptr.svg)](https://crates.io/crates/fn-ptr) [![Documentation](https://docs.rs/fn-ptr/badge.svg)](https://docs.rs/fn-ptr) [![dependency status](https://deps.rs/repo/github/openbytedev/fn-ptr/status.svg)](https://deps.rs/repo/github/openbytedev/fn-ptr) [![MIT](https://img.shields.io/crates/l/fn-ptr.svg)](https://github.com/OpenByteDev/fn-ptr/blob/master/LICENSE)
 
-`fn-ptr` is a small utility crate that provides a [`FnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.FnPtr.html) trait, implemented for all function pointer types:
+This is a small utility crate that provides the [`FnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.FnPtr.html) trait, which is implemented for all function pointer types:
 - `fn(T) -> U`
 - `unsafe fn(T) -> U`
 - `extern "C" fn(T)`
