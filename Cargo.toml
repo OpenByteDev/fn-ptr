@@ -1,9 +1,14 @@
 [package]
 name = "fn-ptr"
-description = "A crate providing a function pointer trait."
 version = "0.3.0"
-edition = "2024"
+description = "A crate providing function pointer traits."
+repository = "https://github.com/OpenByteDev/fn-ptr"
+documentation = "https://docs.rs/fn-ptr"
 license = "MIT"
+authors = ["OpenByte <development.openbyte@gmail.com>"]
+edition = "2024"
+categories = ["no-std", "no-std::no-alloc", "rust-patterns"]
+keywords = ["fn", "function", "fn_traits"]
 
 [dependencies]
 const_panic = "0.2"
