@@ -76,20 +76,13 @@ type H = with_abi!("C", extern "system" fn());
 Or at the instance level:
 
 ```rust
+use fn_ptr::{FnPtr, abi};
 let rust_add: fn(i32, i32) -> i32 = |a, b| {a + b};
 // Safety: not actually safe!
-let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{Abi::C}>() };
+let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{abi!("C")}>() };
 ```
 
 Note that this does not change the underlying ABI and should be used with caution.
-Also since arbitrary const generic types are unstable the code above only works on nightly, and requires converting
-the ABI to an [`u8`] on stable:
-```rust
-// Always works
-let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{fn_ptr::abi::key(Abi::C)}>() };
-// Works only on stable or beta
-let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{Abi::C as u8}>() };
-```
 
 ## How It Works
 

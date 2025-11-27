@@ -82,28 +82,14 @@
 //! Or at the instance level:
 //!
 //! ```rust
-//! # use fn_ptr::{FnPtr, Abi, abi::key};
+//! use fn_ptr::{FnPtr, abi};
 //! let rust_add: fn(i32, i32) -> i32 = |a, b| {a + b};
-//! # #[cfg(nightly_build)]
 //! // Safety: not actually safe!
-//! let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{Abi::C}>() };
-//! # #[cfg(not(nightly_build))]
-//! # let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{key(Abi::C)}>() };
+//! let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{abi!("C")}>() };
 //! # assert_eq!(rust_add.addr(), c_add.addr());
 //! ```
 //!
 //! Note that this does not change the underlying ABI and should be used with caution.
-//! Also since arbitrary const generic types are unstable the code above only works on nightly, and requires converting
-//! the ABI to an [`u8`] on stable:
-//! ```rust
-//! # use fn_ptr::{FnPtr, Abi};
-//! # let rust_add: fn(i32, i32) -> i32 = |a, b| {a + b};
-//! // Always works
-//! let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{fn_ptr::abi::key(Abi::C)}>() };
-//! // Works only on stable or beta
-//! let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{Abi::C as u8}>() };
-//! # assert_eq!(rust_add.addr(), c_add.addr());
-//! ```
 //!
 //! ## How It Works
 //!
@@ -240,9 +226,9 @@ pub trait FnPtr:
     + 'static
     + WithSafety<true>
     + WithSafety<false>
-    + WithAbi<{ abi::key(Abi::Rust) }>
-    + WithAbi<{ abi::key(Abi::C) }>
-    + WithAbi<{ abi::key(Abi::System) }>
+    + WithAbi<{ abi!("Rust") }>
+    + WithAbi<{ abi!("C") }>
+    + WithAbi<{ abi!("system") }>
 {
     fnptr_trait_body!();
 }
@@ -268,9 +254,9 @@ pub trait FnPtr:
     + 'static
     + WithSafety<true>
     + WithSafety<false>
-    + WithAbi<{ Abi::Rust }>
-    + WithAbi<{ Abi::C }>
-    + WithAbi<{ Abi::System }>
+    + WithAbi<{ abi!("Rust") }>
+    + WithAbi<{ abi!("C") }>
+    + WithAbi<{ abi!("system") }>
     + std::marker::FnPtr
 {
     fnptr_trait_body!();
@@ -383,7 +369,7 @@ macro_rules! with_abi {
 
     // ABI given as a string literal
     ( $abi_lit:literal, $ty:ty ) => {
-        <$ty as $crate::WithAbi<{ $crate::abi::key($crate::abi::parse_or_fail($abi_lit)) }>>::F
+        <$ty as $crate::WithAbi<{ $crate::abi!($abi_lit) }>>::F
     };
 }
 
@@ -474,5 +460,32 @@ macro_rules! make_extern {
 macro_rules! make_non_extern {
     ( $ty:ty ) => {
         $crate::with_abi!($crate::Abi::Rust, $ty)
+    };
+}
+
+/// Converts an ABI string like "C" into the corresponding value for use in const generics.
+/// This is most useful for stable rust since there [`u8`]s are used.
+///
+/// # Example
+///
+/// ```rust
+/// # use fn_ptr::make_non_extern;
+/// type F = extern "C" fn(i32) -> i32;
+/// type R = make_non_extern!(F);
+/// // `R` is `fn(i32) -> i32`
+/// ```
+///
+/// Equivalent to:
+/// ```rust
+/// # use fn_ptr::{Abi, with_abi};
+/// # type F = extern "C" fn(i32) -> i32;
+/// # type G =
+/// with_abi!(Abi::Rust, F)
+/// # ;
+/// ```
+#[macro_export]
+macro_rules! abi {
+    ( $abi:literal ) => {
+        $crate::abi::key($crate::abi::parse_or_fail($abi))
     };
 }
