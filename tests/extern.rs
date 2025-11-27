@@ -1,4 +1,4 @@
-#![cfg(feature = "nightly")]
+#![cfg(nightly_build)]
 
 use fn_ptr::with_abi;
 

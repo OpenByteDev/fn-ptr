@@ -86,7 +86,7 @@
 //! # #[cfg(nightly_build)]
 //! // Safety: not actually safe!
 //! let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{Abi::C}>() };
-//! # #[cfg(not(feature = "nightly"))]
+//! # #[cfg(not(nightly_build))]
 //! # let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{key(Abi::C)}>() };
 //! # assert_eq!(rust_add.addr(), c_add.addr());
 //! ```

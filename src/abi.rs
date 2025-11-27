@@ -9,7 +9,7 @@ use const_panic::concat_panic;
 
 /// The abi or calling convention of a function pointer.
 #[repr(u8)]
-#[cfg_attr(feature = "nightly", derive(ConstParamTy))]
+#[cfg_attr(nightly_build, derive(ConstParamTy))]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum Abi {
     /// The default ABI when you write a normal `fn foo()` in any Rust code.
