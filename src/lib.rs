@@ -219,7 +219,7 @@ macro_rules! fnptr_trait_body {
     };
 }
 
-#[cfg(not(feature = "nightly"))]
+#[cfg(not(nightly_build))]
 pub trait FnPtr:
     PartialEq
     + Eq
