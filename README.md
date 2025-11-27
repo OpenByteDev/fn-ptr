@@ -80,7 +80,7 @@ type U2 = make_unsafe!(S2);   // unsafe extern "C" fn(i32)
 ```
 
 ## How it works under the hood
-All macros rely on type-level traits [`WithAbi`] and [`WithSafety`]. Each trait exposes an associated type representing the transformed function pointer. You can use these traits directly for const generics or explicit type transformations:
+All macros rely on type-level traits [`WithAbi`] and [`WithSafety`]. Each trait exposes an associated type representing the transformed function pointer.
 
 ```rust
 use fn_ptr::{FnPtr, WithAbi, WithSafety, Abi};

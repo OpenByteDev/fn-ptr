@@ -37,7 +37,8 @@
 //!
 //! ### 1. Function Pointer Metadata
 //!
-//! Every function pointer automatically implements [`FnPtr`]. Depending on the type, it may also implement [`SafeFnPtr`], [`UnsafeFnPtr`], and [`HasAbi<Abi>`].
+//! Every function pointer automatically implements [`FnPtr`].
+//! Depending on the type, it may also implement [`SafeFnPtr`], [`UnsafeFnPtr`], and [`HasAbi<Abi>`].
 //!
 //! ```rust
 //! use fn_ptr::{FnPtr, Abi};
@@ -92,7 +93,8 @@
 //!
 //! ## How It Works
 //!
-//! All macros rely on type-level traits [`WithAbi`] and [`WithSafety`]. Each trait exposes an associated type representing the transformed function pointer. You can use these traits directly for const generics or explicit type transformations:
+//! All macros rely on type-level traits [`WithAbi`] and [`WithSafety`].
+//! Each trait exposes an associated type representing the transformed function pointer. You can use these traits directly for const generics or explicit type transformations:
 //!
 //! ```rust
 //! # #[cfg(feature = "nightly")] {
