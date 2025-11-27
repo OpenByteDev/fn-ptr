@@ -1,5 +1,6 @@
 #![cfg_attr(nightly_build, feature(adt_const_params, fn_ptr_trait))]
 #![warn(clippy::pedantic)]
+#![no_std]
 
 //! `fn-ptr` is a small utility crate that provides a [`FnPtr`] trait, implemented for all function pointer types:
 //! - `fn(T) -> U`
