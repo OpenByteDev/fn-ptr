@@ -14,16 +14,19 @@ konst = "0.4"
 static_assertions = "1.1"
 
 [features]
-default = ["nightly"]
+default = []
+stable = []
 nightly = []
 max-arity-12 = []
 
 [build-dependencies]
 cargo-emit = "0.2"
 build-target = "0.8"
+rustc_version = "0.4"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
+	'cfg(nightly_build)',
 	'cfg(has_abi_cdecl)',
 	'cfg(has_abi_stdcall)',
 	'cfg(has_abi_fastcall)',

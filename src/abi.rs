@@ -1,4 +1,4 @@
-#[cfg(feature = "nightly")]
+#[cfg(nightly_build)]
 use core::marker::ConstParamTy;
 use core::{
     fmt::{Debug, Display},
@@ -168,9 +168,9 @@ pub const fn parse_or_fail(conv: &'static str) -> Abi {
     }
 }
 
-#[cfg(feature = "nightly")]
+#[cfg(nightly_build)]
 pub(crate) type AbiKey = Abi;
-#[cfg(not(feature = "nightly"))]
+#[cfg(not(nightly_build))]
 pub(crate) type AbiKey = u8;
 
 #[must_use]

@@ -1,4 +1,4 @@
-#![cfg_attr(feature = "nightly", feature(adt_const_params, fn_ptr_trait))]
+#![cfg_attr(nightly_build, feature(adt_const_params, fn_ptr_trait))]
 #![warn(clippy::pedantic)]
 //! # fn-ptr
 //!
@@ -68,7 +68,7 @@
 //! You can change the ABI of a function pointer type using macros:
 //!
 //! ```rust
-//! # #[cfg(feature = "nightly")] {
+//! # #[cfg(nightly_build)] {
 //! use fn_ptr::{with_abi, Abi};
 //!
 //! type F = extern "C" fn(i32) -> i32;
@@ -98,7 +98,7 @@
 //! Each trait exposes an associated type representing the transformed function pointer. You can use these traits directly for const generics or explicit type transformations:
 //!
 //! ```rust
-//! # #[cfg(feature = "nightly")] {
+//! # #[cfg(nightly_build)] {
 //! use fn_ptr::{FnPtr, WithAbi, WithSafety, Abi};
 //!
 //! type F = extern "C" fn(i32);
@@ -197,7 +197,6 @@ macro_rules! fnptr_trait_body {
         ///
         /// # Safety
         /// Caller must ensure that the resulting ABI transformation is sound.
-        #[cfg(feature = "nightly")]
         #[must_use]
         unsafe fn with_abi<const ABI: AbiKey>(&self) -> <Self as WithAbi<ABI>>::F
         where
@@ -235,7 +234,7 @@ pub trait FnPtr:
     fnptr_trait_body!();
 }
 
-#[cfg(feature = "nightly")]
+#[cfg(nightly_build)]
 pub trait FnPtr:
     PartialEq
     + Eq

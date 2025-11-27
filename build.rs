@@ -1,6 +1,13 @@
 use build_target::{Arch, Os};
 
 fn main() {
+    let version_meta = rustc_version::version_meta().unwrap();
+    if cfg!(feature = "nightly") && !cfg!(feature = "stable")
+        || version_meta.channel == rustc_version::Channel::Nightly
+    {
+        cargo_emit::rustc_cfg!("nightly");
+    }
+
     let t = build_target::target();
 
     // x86: cdecl, stdcall and fastcall
