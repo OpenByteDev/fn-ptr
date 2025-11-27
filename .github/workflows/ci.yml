@@ -51,9 +51,9 @@ jobs:
         with:
           toolchain: ${{ matrix.toolchain }}
           target: ${{ matrix.target }}
-          
+      
       - name: Build
-        shell: cargo build --target "${{ matrix.target }}"
+        run: cargo build --target "${{ matrix.target }}"
         
       - name: Test
         run: cargo test --target "${{ matrix.target }}"
