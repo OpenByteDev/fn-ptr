@@ -219,7 +219,7 @@ macro_rules! fnptr_trait_body {
         }
     };
 }
-
+/// Marker trait for all function pointers.
 #[cfg(not(nightly_build))]
 pub trait FnPtr:
     PartialEq
@@ -247,6 +247,7 @@ pub trait FnPtr:
     fnptr_trait_body!();
 }
 
+/// Marker trait for all function pointers.
 #[cfg(nightly_build)]
 pub trait FnPtr:
     PartialEq
