@@ -184,21 +184,17 @@ pub const fn key(abi: Abi) -> AbiKey {
 /// This is most useful for stable rust since there [`u8`]s are used.
 ///
 /// # Example
-///
 /// ```rust
-/// # use fn_ptr::make_non_extern;
-/// type F = extern "C" fn(i32) -> i32;
-/// type R = make_non_extern!(F);
-/// // `R` is `fn(i32) -> i32`
-/// ```
+/// use fn_ptr::{abi, FnPtr};
 ///
-/// Equivalent to:
-/// ```rust
-/// # use fn_ptr::{Abi, with_abi};
-/// # type F = extern "C" fn(i32) -> i32;
-/// # type G =
-/// with_abi!(Abi::Rust, F)
-/// # ;
+/// fn add(a: i32, b: i32) -> i32 {
+///     a + b
+/// }
+/// 
+/// let f: fn(i32, i32) -> i32 = add;
+/// 
+/// let c_fn: extern "C" fn(i32, i32) -> i32 =
+///     unsafe { f.with_abi::<{ abi!("C") }>() };
 /// ```
 #[macro_export]
 macro_rules! abi {
