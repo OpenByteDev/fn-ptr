@@ -53,6 +53,10 @@ macro_rules! impl_fn {
         }
         impl_fn!(@impl_safe_fn_type ($($nm : $ty),*), $fn_type, $safety);
 
+        #[automatically_derived]
+        impl<Ret: 'static, $($ty: 'static),*> $crate::StaticFnPtr for $fn_type {
+        }
+
         // WithSafety
         #[automatically_derived]
         impl<Ret, $($ty),*> $crate::WithSafety<{true}> for $fn_type {

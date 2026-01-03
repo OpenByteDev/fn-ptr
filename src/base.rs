@@ -36,7 +36,6 @@ pub trait FnPtr:
     + UnwindSafe
     + RefUnwindSafe
     + Sized
-    // + 'static
     #[cfg(nightly_build)]
     (+ core::marker::FnPtr)
     + WithSafety<true>
@@ -158,6 +157,10 @@ pub trait UnsafeFnPtr: FnPtr {
     // NOTE: Can't use "call" due to fn_traits feature
     unsafe fn invoke(&self, args: Self::Args) -> Self::Output;
 }
+
+/// Marker trait for all *static* function pointer types.
+/// The return type and all parameter types have to be `'static`.
+pub trait StaticFnPtr: FnPtr + 'static {}
 
 /// Marker trait implemented for function pointers of a specific ABI.
 ///
