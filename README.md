@@ -15,7 +15,7 @@ The trait provides associated types and constants to introspect function pointer
 ### 1. Function Pointer Metadata
 
 Every function pointer automatically implements [`FnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.FnPtr.html).
-Depending on the type, they also implement [`SafeFnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.SafeFnPtr.html),, [`UnsafeFnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.UnsafeFnPtr.html), and [`HasAbi<Abi>`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.HasAbi.html).
+Depending on the type, they also implement [`SafeFnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.SafeFnPtr.html), [`UnsafeFnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.UnsafeFnPtr.html), [`StaticFnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.StaticFnPtr.html) and [`HasAbi<Abi>`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.HasAbi.html).
 With it you can inspect the type of function:
 
 ```rust
