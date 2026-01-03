@@ -87,6 +87,7 @@ pub trait FnPtr:
     /// This function is unsafe because it can not check if the argument points to a function
     /// of the correct type.
     #[must_use]
+    #[allow(clippy::missing_safety_doc)] // false positive?
     unsafe fn from_ptr(ptr: UntypedFnPtr) -> Self;
 
     /// Produces an unsafe version of this function pointer.
