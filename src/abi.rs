@@ -190,9 +190,9 @@ pub const fn key(abi: Abi) -> AbiKey {
 /// fn add(a: i32, b: i32) -> i32 {
 ///     a + b
 /// }
-/// 
+///
 /// let f: fn(i32, i32) -> i32 = add;
-/// 
+///
 /// let c_fn: extern "C" fn(i32, i32) -> i32 =
 ///     unsafe { f.with_abi::<{ abi!("C") }>() };
 /// ```
