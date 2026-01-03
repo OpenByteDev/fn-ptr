@@ -14,7 +14,7 @@ keywords = ["fn", "function", "fn_traits"]
 const_panic = "0.2"
 ffi-opaque = "2.0"
 konst = "0.4"
-cfg-tt = "0.2"
+cfg-tt = "0.3"
 
 [dev-dependencies]
 static_assertions = "1.1"
