@@ -44,7 +44,7 @@ jobs:
             toolchain: nightly
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install latest ${{ matrix.toolchain }}
         uses: dtolnay/rust-toolchain@master
@@ -65,7 +65,7 @@ jobs:
       matrix:
         toolchain: [nightly, stable]
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Install latest ${{ matrix.toolchain }}
       uses: dtolnay/rust-toolchain@master
       with:
@@ -84,7 +84,7 @@ jobs:
       matrix:
         toolchain: [nightly, stable]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install latest ${{ matrix.toolchain }}
         uses: dtolnay/rust-toolchain@master
         with:
@@ -101,7 +101,7 @@ jobs:
       matrix:
         toolchain: [nightly, stable]
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Install latest ${{ matrix.toolchain }}
       uses: dtolnay/rust-toolchain@master
       with:
