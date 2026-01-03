@@ -70,21 +70,18 @@ pub trait FnPtr:
     /// Constructs an instance from an address.
     ///
     /// # Safety
-    /// This function is unsafe because it can not check if the argument points to a function
-    /// of the correct type.
+    /// The given pointer has to point to a function of the correct type.
     #[must_use]
     unsafe fn from_addr(addr: usize) -> Self {
         unsafe { Self::from_ptr(addr as UntypedFnPtr) }
     }
-
     /// Returns a untyped function pointer for this function.
     #[must_use]
     fn as_ptr(&self) -> UntypedFnPtr;
     /// Constructs an instance from an untyped function pointer.
     ///
     /// # Safety
-    /// This function is unsafe because it can not check if the argument points to a function
-    /// of the correct type.
+    /// The given pointer has to point to a function of the correct type.
     #[must_use]
     #[allow(clippy::missing_safety_doc)] // false positive?
     unsafe fn from_ptr(ptr: UntypedFnPtr) -> Self;
