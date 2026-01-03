@@ -34,7 +34,7 @@ macro_rules! impl_fn {
 
     (@impl_core ($($nm:ident : $ty:ident),*), $fn_type:ty, $safety:tt, $abi_ident:ident, $call_conv:expr) => {
         #[automatically_derived]
-        impl<Ret: 'static, $($ty: 'static),*> $crate::FnPtr for $fn_type {
+        impl<Ret, $($ty),*> $crate::FnPtr for $fn_type {
             type Args = ($($ty,)*);
             type Output = Ret;
 
@@ -55,59 +55,59 @@ macro_rules! impl_fn {
 
         // WithSafety
         #[automatically_derived]
-        impl<Ret: 'static, $($ty: 'static),*> $crate::WithSafety<{true}> for $fn_type {
+        impl<Ret, $($ty),*> $crate::WithSafety<{true}> for $fn_type {
             type F = extern $call_conv fn($($ty),*) -> Ret;
         }
         #[automatically_derived]
-        impl<Ret: 'static, $($ty: 'static),*> $crate::WithSafety<{false}> for $fn_type {
+        impl<Ret, $($ty),*> $crate::WithSafety<{false}> for $fn_type {
             type F = unsafe extern $call_conv fn($($ty),*) -> Ret;
         }
 
         // HasAbi
         #[automatically_derived]
-        impl<Ret: 'static, $($ty: 'static),*> $crate::HasAbi<{$crate::abi!($call_conv)}> for $fn_type {}
+        impl<Ret, $($ty),*> $crate::HasAbi<{$crate::abi!($call_conv)}> for $fn_type {}
 
         // WithAbi
         #[automatically_derived]
-        impl<Ret: 'static, $($ty: 'static),*> $crate::WithAbi<{$crate::abi!("Rust")}> for $fn_type {
+        impl<Ret, $($ty),*> $crate::WithAbi<{$crate::abi!("Rust")}> for $fn_type {
             type F = impl_fn!(@make_unsafe extern "Rust" fn($($ty),*) -> Ret, $safety);
         }
         #[automatically_derived]
-        impl<Ret: 'static, $($ty: 'static),*> $crate::WithAbi<{$crate::abi!("C")}> for $fn_type {
+        impl<Ret, $($ty),*> $crate::WithAbi<{$crate::abi!("C")}> for $fn_type {
             type F = impl_fn!(@make_unsafe extern "C" fn($($ty),*) -> Ret, $safety);
         }
         #[automatically_derived]
-        impl<Ret: 'static, $($ty: 'static),*> $crate::WithAbi<{$crate::abi!("system")}> for $fn_type {
+        impl<Ret, $($ty),*> $crate::WithAbi<{$crate::abi!("system")}> for $fn_type {
             type F = impl_fn!(@make_unsafe extern "system" fn($($ty),*) -> Ret, $safety);
         }
         #[cfg(has_abi_cdecl)]
         #[automatically_derived]
-        impl<Ret: 'static, $($ty: 'static),*> $crate::WithAbi<{$crate::abi!("cdecl")}> for $fn_type {
+        impl<Ret, $($ty),*> $crate::WithAbi<{$crate::abi!("cdecl")}> for $fn_type {
             type F = impl_fn!(@make_unsafe extern "cdecl" fn($($ty),*) -> Ret, $safety);
         }
         #[cfg(has_abi_stdcall)]
         #[automatically_derived]
-        impl<Ret: 'static, $($ty: 'static),*> $crate::WithAbi<{$crate::abi!("stdcall")}> for $fn_type {
+        impl<Ret, $($ty),*> $crate::WithAbi<{$crate::abi!("stdcall")}> for $fn_type {
             type F = impl_fn!(@make_unsafe extern "stdcall" fn($($ty),*) -> Ret, $safety);
         }
         #[cfg(has_abi_fastcall)]
         #[automatically_derived]
-        impl<Ret: 'static, $($ty: 'static),*> $crate::WithAbi<{$crate::abi!("fastcall")}> for $fn_type {
+        impl<Ret, $($ty),*> $crate::WithAbi<{$crate::abi!("fastcall")}> for $fn_type {
             type F = impl_fn!(@make_unsafe extern "fastcall" fn($($ty),*) -> Ret, $safety);
         }
         #[cfg(has_abi_win64)]
         #[automatically_derived]
-        impl<Ret: 'static, $($ty: 'static),*> $crate::WithAbi<{$crate::abi!("win64")}> for $fn_type {
+        impl<Ret, $($ty),*> $crate::WithAbi<{$crate::abi!("win64")}> for $fn_type {
             type F = impl_fn!(@make_unsafe extern "win64" fn($($ty),*) -> Ret, $safety);
         }
         #[cfg(has_abi_sysv64)]
         #[automatically_derived]
-        impl<Ret: 'static, $($ty: 'static),*> $crate::WithAbi<{$crate::abi!("sysv64")}> for $fn_type {
+        impl<Ret, $($ty),*> $crate::WithAbi<{$crate::abi!("sysv64")}> for $fn_type {
             type F = impl_fn!(@make_unsafe extern "sysv64" fn($($ty),*) -> Ret, $safety);
         }
         #[cfg(has_abi_aapcs)]
         #[automatically_derived]
-        impl<Ret: 'static, $($ty: 'static),*> $crate::WithAbi<{$crate::abi!("aapcs")}> for $fn_type {
+        impl<Ret, $($ty),*> $crate::WithAbi<{$crate::abi!("aapcs")}> for $fn_type {
             type F = impl_fn!(@make_unsafe extern "aapcs" fn($($ty),*) -> Ret, $safety);
         }
     };
@@ -128,7 +128,7 @@ macro_rules! impl_fn {
 
     (@impl_safe_fn_type ($($nm:ident : $ty:ident),*), $fn_type:ty, true) => {
         #[automatically_derived]
-        impl<Ret: 'static, $($ty: 'static),*> $crate::SafeFnPtr for $fn_type {
+        impl<Ret, $($ty),*> $crate::SafeFnPtr for $fn_type {
             fn invoke(&self, impl_fn!(@call_args ($($nm),*)): Self::Args) -> Self::Output {
                 (*self)($($nm),*)
             }
@@ -136,7 +136,7 @@ macro_rules! impl_fn {
      };
     (@impl_safe_fn_type ($($nm:ident : $ty:ident),*), $fn_type:ty, false) => {
         #[automatically_derived]
-        impl<Ret: 'static, $($ty: 'static),*> $crate::UnsafeFnPtr for $fn_type {
+        impl<Ret, $($ty),*> $crate::UnsafeFnPtr for $fn_type {
             unsafe fn invoke(&self, impl_fn!(@call_args ($($nm),*)): Self::Args) -> Self::Output {
                 unsafe { (*self)($($nm),*) }
             }
