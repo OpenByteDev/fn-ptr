@@ -18,82 +18,8 @@ ffi_opaque::opaque! {
 /// Type alias for a raw untyped function pointer.
 pub type UntypedFnPtr = *const OpaqueFn;
 
-macro_rules! fnptr_trait_body {
-    () => {
-        /// The argument types as a tuple.
-        type Args;
-
-        /// The return type.
-        type Output;
-
-        /// The function's arity (number of arguments).
-        const ARITY: usize;
-
-        /// Whether the function pointer is safe (fn) or unsafe (unsafe fn).
-        const IS_SAFE: bool;
-
-        /// Whether the function pointer uses an extern calling convention.
-        const IS_EXTERN: bool;
-
-        /// The ABI associated with this function pointer.
-        const ABI: Abi;
-
-        /// Returns the address of this function.
-        #[must_use]
-        fn addr(&self) -> usize {
-            self.as_ptr() as usize
-        }
-        /// Constructs an instance from an address.
-        ///
-        /// # Safety
-        /// This function is unsafe because it can not check if the argument points to a function
-        /// of the correct type.
-        #[must_use]
-        unsafe fn from_addr(addr: usize) -> Self {
-            unsafe { Self::from_ptr(addr as UntypedFnPtr) }
-        }
-
-        /// Returns a untyped function pointer for this function.
-        #[must_use]
-        fn as_ptr(&self) -> UntypedFnPtr;
-        /// Constructs an instance from an untyped function pointer.
-        ///
-        /// # Safety
-        /// This function is unsafe because it can not check if the argument points to a function
-        /// of the correct type.
-        #[must_use]
-        unsafe fn from_ptr(ptr: UntypedFnPtr) -> Self;
-
-        /// Produces an unsafe version of this function pointer.
-        #[must_use]
-        fn as_unsafe(&self) -> make_unsafe!(Self) {
-            unsafe { FnPtr::from_ptr(self.as_ptr()) }
-        }
-
-        /// Produces a safe version of this function pointer.
-        ///
-        /// # Safety
-        /// Caller must ensure the underlying function is actually safe to call.
-        #[must_use]
-        unsafe fn as_safe(&self) -> make_safe!(Self) {
-            unsafe { FnPtr::from_ptr(self.as_ptr()) }
-        }
-
-        /// Produces a version of this function pointer with the given ABI.
-        ///
-        /// # Safety
-        /// Caller must ensure that the resulting ABI transformation is sound.
-        #[must_use]
-        unsafe fn with_abi<const ABI: AbiKey>(&self) -> <Self as WithAbi<ABI>>::F
-        where
-            Self: WithAbi<ABI>,
-        {
-            unsafe { FnPtr::from_ptr(self.as_ptr()) }
-        }
-    };
-}
+cfg_tt::cfg_tt! {
 /// Marker trait for all function pointers.
-#[cfg(not(nightly_build))]
 pub trait FnPtr:
     PartialEq
     + Eq
@@ -110,43 +36,86 @@ pub trait FnPtr:
     + UnwindSafe
     + RefUnwindSafe
     + Sized
-    + 'static
+    // + 'static
+    #[cfg(nightly_build)]
+    (+ core::marker::FnPtr)
     + WithSafety<true>
     + WithSafety<false>
     + WithAbi<{ abi!("Rust") }>
     + WithAbi<{ abi!("C") }>
     + WithAbi<{ abi!("system") }>
 {
-    fnptr_trait_body!();
-}
+    /// The argument types as a tuple.
+    type Args;
 
-/// Marker trait for all function pointers.
-#[cfg(nightly_build)]
-pub trait FnPtr:
-    PartialEq
-    + Eq
-    + PartialOrd
-    + Ord
-    + Hash
-    + Pointer
-    + Debug
-    + Clone
-    + Copy
-    + Send
-    + Sync
-    + Unpin
-    + UnwindSafe
-    + RefUnwindSafe
-    + Sized
-    + 'static
-    + WithSafety<true>
-    + WithSafety<false>
-    + WithAbi<{ abi!("Rust") }>
-    + WithAbi<{ abi!("C") }>
-    + WithAbi<{ abi!("system") }>
-    + std::marker::FnPtr
-{
-    fnptr_trait_body!();
+    /// The return type.
+    type Output;
+
+    /// The function's arity (number of arguments).
+    const ARITY: usize;
+
+    /// Whether the function pointer is safe (fn) or unsafe (unsafe fn).
+    const IS_SAFE: bool;
+
+    /// Whether the function pointer uses an extern calling convention.
+    const IS_EXTERN: bool;
+
+    /// The ABI associated with this function pointer.
+    const ABI: Abi;
+
+    /// Returns the address of this function.
+    #[must_use]
+    fn addr(&self) -> usize {
+        self.as_ptr() as usize
+    }
+    /// Constructs an instance from an address.
+    ///
+    /// # Safety
+    /// This function is unsafe because it can not check if the argument points to a function
+    /// of the correct type.
+    #[must_use]
+    unsafe fn from_addr(addr: usize) -> Self {
+        unsafe { Self::from_ptr(addr as UntypedFnPtr) }
+    }
+
+    /// Returns a untyped function pointer for this function.
+    #[must_use]
+    fn as_ptr(&self) -> UntypedFnPtr;
+    /// Constructs an instance from an untyped function pointer.
+    ///
+    /// # Safety
+    /// This function is unsafe because it can not check if the argument points to a function
+    /// of the correct type.
+    #[must_use]
+    unsafe fn from_ptr(ptr: UntypedFnPtr) -> Self;
+
+    /// Produces an unsafe version of this function pointer.
+    #[must_use]
+    fn as_unsafe(&self) -> make_unsafe!(Self) {
+        unsafe { FnPtr::from_ptr(self.as_ptr()) }
+    }
+
+    /// Produces a safe version of this function pointer.
+    ///
+    /// # Safety
+    /// Caller must ensure the underlying function is actually safe to call.
+    #[must_use]
+    unsafe fn as_safe(&self) -> make_safe!(Self) {
+        unsafe { FnPtr::from_ptr(self.as_ptr()) }
+    }
+
+    /// Produces a version of this function pointer with the given ABI.
+    ///
+    /// # Safety
+    /// Caller must ensure that the resulting ABI transformation is sound.
+    #[must_use]
+    unsafe fn with_abi<const ABI: AbiKey>(&self) -> <Self as WithAbi<ABI>>::F
+    where
+        Self: WithAbi<ABI>,
+    {
+        unsafe { FnPtr::from_ptr(self.as_ptr()) }
+    }
+}
 }
 
 /// Marker trait for all *safe* function pointer types (`fn` / `extern fn`).

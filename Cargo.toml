@@ -12,22 +12,23 @@ keywords = ["fn", "function", "fn_traits"]
 
 [dependencies]
 const_panic = "0.2"
-ffi-opaque = "2.0.1"
+ffi-opaque = "2.0"
 konst = "0.4"
+cfg-tt = "0.2"
 
 [dev-dependencies]
 static_assertions = "1.1"
+
+[build-dependencies]
+cargo-emit = "0.2"
+build-target = "0.8"
+rustc_version = "0.4"
 
 [features]
 default = []
 stable = []
 nightly = []
 max-arity-12 = []
-
-[build-dependencies]
-cargo-emit = "0.2"
-build-target = "0.8"
-rustc_version = "0.4"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
