@@ -81,9 +81,7 @@ impl Abi {
             Abi::Thiscall { unwind } if arch_x86 => Abi::Thiscall { unwind },
             Abi::Thiscall { .. } => return None,
 
-            Abi::Vectorcall { unwind } if arch_x86 || arch_x86_64 => {
-                Abi::Vectorcall { unwind }
-            }
+            Abi::Vectorcall { unwind } if arch_x86 || arch_x86_64 => Abi::Vectorcall { unwind },
             Abi::Vectorcall { .. } => return None,
 
             Abi::SysV64 { unwind } if arch_x86_64 => Abi::SysV64 { unwind },
