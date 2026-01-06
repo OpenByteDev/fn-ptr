@@ -72,6 +72,35 @@ pub trait Convertible:
     + AsUnsafe
 {
 }
+impl<T> Convertible for T
+where
+    T: FnPtr
+        + WithAbi<marker::Rust>
+        + WithAbi<marker::C>
+        + WithAbi<marker::CUnwind>
+        + WithAbi<marker::System>
+        + WithAbi<marker::SystemUnwind>
+        + WithAbi<marker::Aapcs>
+        + WithAbi<marker::AapcsUnwind>
+        + WithAbi<marker::Cdecl>
+        + WithAbi<marker::CdeclUnwind>
+        + WithAbi<marker::Stdcall>
+        + WithAbi<marker::StdcallUnwind>
+        + WithAbi<marker::Fastcall>
+        + WithAbi<marker::FastcallUnwind>
+        + WithAbi<marker::Thiscall>
+        + WithAbi<marker::ThiscallUnwind>
+        + WithAbi<marker::Vectorcall>
+        + WithAbi<marker::VectorcallUnwind>
+        + WithAbi<marker::SysV64>
+        + WithAbi<marker::SysV64Unwind>
+        + WithAbi<marker::Win64>
+        + WithAbi<marker::Win64Unwind>
+        + WithSafety<marker::Safe>
+        + WithSafety<marker::Unsafe>
+        + AsSafe
+        + AsUnsafe,
+{}
 
 /// Construct a function-pointer type identical to the given one but using
 /// the specified ABI.
