@@ -85,7 +85,7 @@ macro_rules! impl_fn {
 
             const ARITY: ::core::primitive::usize = <Self::ArityMarker as $crate::marker::Arity>::N;
             const IS_SAFE: ::core::primitive::bool = <Self::SafetyMarker as $crate::marker::Safety>::IS_SAFE;
-            const ABI: $crate::Abi = <$crate::marker::$abi_ident as $crate::marker::Abi>::KIND;
+            const ABI: $crate::Abi = <$crate::marker::$abi_ident as $crate::marker::Abi>::VALUE;
             const IS_EXTERN: ::core::primitive::bool = !matches!(Self::ABI, $crate::Abi::Rust);
 
             fn as_ptr(&self) -> $crate::UntypedFnPtr {

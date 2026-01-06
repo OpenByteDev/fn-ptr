@@ -15,9 +15,8 @@
 //!
 //! ### 1. Function Pointer Metadata
 //!
-//! Every function pointer automatically implements [`FnPtr`].
-//! Depending on the type, they also implement [`SafeFnPtr`], [`UnsafeFnPtr`], and [`HasAbi<Abi>`].
-//! With it you can inspect the type of function:
+//! Every function pointer automatically implements [`FnPtr`] as well as a bunch of other related traits.
+//! With these you can inspect the type of function pointers at compile time:
 //!
 //! ```rust
 //! use fn_ptr::{FnPtr, Abi};
@@ -70,14 +69,12 @@
 //! You can also change the ABI of a function pointer at the type level:
 //!
 //! ```rust
-//! # #[cfg(nightly_build)] {
 //! use fn_ptr::{with_abi, Abi};
 //!
 //! type F = extern "C" fn(i32) -> i32;
 //!
-//! type G = with_abi!(Abi::Sysv64, F);
+//! type G = with_abi!("sysv64", F);
 //! type H = with_abi!("C", extern "system" fn());
-//! # }
 //! ```
 //!
 //! Or at the instance level:
@@ -98,13 +95,11 @@
 //! For the conversion macros the crate relies on two traits: [`WithAbi`] and [`WithSafety`] that can also be used directly:
 //!
 //! ```rust
-//! # #[cfg(nightly_build)] {
-//! use fn_ptr::{FnPtr, WithAbi, WithSafety, Abi};
+//! use fn_ptr::{FnPtr, WithAbi, WithSafety, marker::{SysV64, Unsafe}};
 //!
 //! type F = extern "C" fn(i32);
-//! type G = <F as WithAbi<{Abi::Sysv64}>>::F;
-//! type U = <F as WithSafety<{false}>>::F;
-//! # }
+//! type G = <F as WithAbi<SysV64>>::F;
+//! type U = <F as WithSafety<Unsafe>>::F;
 //! ```
 //!
 //! ## License

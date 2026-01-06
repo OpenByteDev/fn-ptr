@@ -43,6 +43,7 @@ impl<F: WithSafety<Unsafe>> AsUnsafe for F {}
 
 cfg_tt::cfg_tt! {
 /// Helper trait that simplifies generic bounds when converting between funciton pointer types.
+// using has_abi_cdecl instead of stdcall, fastcall, thiscall is to reduce compile times
 pub trait Convertible:
     FnPtr
     + WithAbi<marker::Rust>
@@ -58,12 +59,12 @@ pub trait Convertible:
     #[cfg(has_abi_aapcs)](+ WithAbi<marker::AapcsUnwind>)
     #[cfg(has_abi_cdecl)](+ WithAbi<marker::Cdecl>)
     #[cfg(has_abi_cdecl)](+ WithAbi<marker::CdeclUnwind>)
-    #[cfg(has_abi_stdcall)](+ WithAbi<marker::Stdcall>)
-    #[cfg(has_abi_stdcall)](+ WithAbi<marker::StdcallUnwind>)
-    #[cfg(has_abi_fastcall)](+ WithAbi<marker::Fastcall>)
-    #[cfg(has_abi_fastcall)](+ WithAbi<marker::FastcallUnwind>)
-    #[cfg(has_abi_thiscall)](+ WithAbi<marker::Thiscall>)
-    #[cfg(has_abi_thiscall)](+ WithAbi<marker::ThiscallUnwind>)
+    #[cfg(has_abi_cdecl)](+ WithAbi<marker::Stdcall>)
+    #[cfg(has_abi_cdecl)](+ WithAbi<marker::StdcallUnwind>)
+    #[cfg(has_abi_cdecl)](+ WithAbi<marker::Fastcall>)
+    #[cfg(has_abi_cdecl)](+ WithAbi<marker::FastcallUnwind>)
+    #[cfg(has_abi_cdecl)](+ WithAbi<marker::Thiscall>)
+    #[cfg(has_abi_cdecl)](+ WithAbi<marker::ThiscallUnwind>)
     #[cfg(has_abi_vectorcall)](+ WithAbi<marker::Vectorcall>)
     #[cfg(has_abi_vectorcall)](+ WithAbi<marker::VectorcallUnwind>)
     #[cfg(has_abi_sysv64)](+ WithAbi<marker::SysV64>)
@@ -88,12 +89,12 @@ where
         #[cfg(has_abi_aapcs)](+ WithAbi<marker::AapcsUnwind>)
         #[cfg(has_abi_cdecl)](+ WithAbi<marker::Cdecl>)
         #[cfg(has_abi_cdecl)](+ WithAbi<marker::CdeclUnwind>)
-        #[cfg(has_abi_stdcall)](+ WithAbi<marker::Stdcall>)
-        #[cfg(has_abi_stdcall)](+ WithAbi<marker::StdcallUnwind>)
-        #[cfg(has_abi_fastcall)](+ WithAbi<marker::Fastcall>)
-        #[cfg(has_abi_fastcall)](+ WithAbi<marker::FastcallUnwind>)
-        #[cfg(has_abi_thiscall)](+ WithAbi<marker::Thiscall>)
-        #[cfg(has_abi_thiscall)](+ WithAbi<marker::ThiscallUnwind>)
+        #[cfg(has_abi_cdecl)](+ WithAbi<marker::Stdcall>)
+        #[cfg(has_abi_cdecl)](+ WithAbi<marker::StdcallUnwind>)
+        #[cfg(has_abi_cdecl)](+ WithAbi<marker::Fastcall>)
+        #[cfg(has_abi_cdecl)](+ WithAbi<marker::FastcallUnwind>)
+        #[cfg(has_abi_cdecl)](+ WithAbi<marker::Thiscall>)
+        #[cfg(has_abi_cdecl)](+ WithAbi<marker::ThiscallUnwind>)
         #[cfg(has_abi_vectorcall)](+ WithAbi<marker::Vectorcall>)
         #[cfg(has_abi_vectorcall)](+ WithAbi<marker::VectorcallUnwind>)
         #[cfg(has_abi_sysv64)](+ WithAbi<marker::SysV64>)
@@ -107,31 +108,65 @@ where
 /// the specified ABI.
 ///
 /// Accepts either:
-/// - an `Abi` value (e.g., `Abi::C`, `Abi::SysV64`), or
+/// - an [`Abi`](crate::marker::Abi) marker type (e.g., [`C`](crate::marker::C), [`SysV64`](crate::marker::SysV64)), or
 /// - a string literal (e.g., `"C"`, `"system"`, `"stdcall"`).
 ///
 /// # Examples
 ///
 /// ```rust
 /// # use fn_ptr::{with_abi, marker};
-/// type F = extern "C" fn(i32) -> i32;
+/// type F = with_abi!(marker::SysV64, extern "C" fn(i32) -> i32);
+/// // `F` is `extern "sysv64" fn(i32) -> i32`
 ///
-/// type G = with_abi!(marker::SysV64, F);
-/// // `G` is `extern "sysv64" fn(i32) -> i32`
-///
-/// type H = with_abi!("C", extern "system" fn());
-/// // `H` is `extern "C" fn()`
+/// type G = with_abi!("C", extern "system" fn());
+/// // `G` is `extern "C" fn()`
 /// ```
 #[macro_export]
 macro_rules! with_abi {
-    // ABI given as a path (Abi::C, Abi::SysV64, ...)
     ( $abi:path, $ty:ty ) => {
         <$ty as $crate::WithAbi<$abi>>::F
     };
 
-    // ABI given as a string literal
-    ( $abi_lit:tt, $ty:ty ) => {
-        <$ty as $crate::WithAbi<$crate::abi!($abi_lit)>>::F
+    ( $lit:tt, $ty:ty ) => {
+        <$ty as $crate::WithAbi<$crate::abi!($lit)>>::F
+    };
+}
+
+/// Construct a function-pointer type identical to the given one but using
+/// the specified safety.
+///
+/// Accepts either:
+/// - an [`Safety`](crate::marker::Safety) marker type ([`Safe`](crate::marker::Safe) or [`Unsafe`](crate::marker::Unsafe))
+/// - safety keyword (`safe` or `unsafe`).
+/// - a boolean literal.
+///
+/// # Examples
+///
+/// ```rust
+/// # use fn_ptr::{with_safety, marker};
+/// type F = with_safety!(marker::Safe, unsafe extern "C" fn(i32) -> i32);
+/// // `F` is `extern "C" fn(i32) -> i32`
+///
+/// type G = with_safety!(unsafe, fn());
+/// // `G` is `unsafe fn()`
+/// ```
+#[macro_export]
+macro_rules! with_safety {
+    ( safe, $ty:ty ) => {
+        $crate::with_safety!(@inner $crate::marker::Safe, $ty)
+    };
+    ( unsafe, $ty:ty ) => {
+        $crate::with_safety!(@inner $crate::marker::Unsafe, $ty)
+    };
+    ( $safety:path, $ty:ty ) => {
+        $crate::with_safety!(@inner $safety, $ty)
+    };
+    ( $safety:tt, $ty:ty ) => {
+        $crate::with_safety!(@inner $crate::safety!($safety), $ty)
+    };
+
+    ( @inner $safety:ty, $ty:ty ) => {
+        <$ty as $crate::WithSafety<$safety>>::F
     };
 }
 

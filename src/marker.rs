@@ -64,7 +64,7 @@ pub trait Abi {
     const STR: &'static str;
 
     /// The runtime [`Abi`] that represent this marker type.
-    const KIND: crate::Abi;
+    const VALUE: crate::Abi;
 }
 
 /// Helper macro to implement [`Abi`].
@@ -78,7 +78,7 @@ macro_rules! define_abi_marker {
 
         impl Abi for $name {
             const STR: &'static str = $lit;
-            const KIND: $crate::Abi = $crate::Abi::from_str_const($lit).unwrap();
+            const VALUE: $crate::Abi = $crate::Abi::from_str_const($lit).unwrap();
         }
     };
 }

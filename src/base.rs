@@ -5,11 +5,11 @@ use core::{
 };
 
 use crate::{
-    AsSafe, AsUnsafe, WithAbi,
+    AsSafe, AsUnsafe, WithAbi, WithSafety,
     abi::Abi,
     make_safe, make_unsafe,
     marker::{self, Safe, Unsafe},
-    with_abi,
+    with_abi, with_safety,
 };
 
 ffi_opaque::opaque! {
@@ -113,6 +113,18 @@ pub trait FnPtr:
     unsafe fn with_abi<Abi: marker::Abi>(&self) -> with_abi!(Abi, Self)
     where
         Self: WithAbi<Abi>,
+    {
+        unsafe { FnPtr::from_ptr(self.as_ptr()) }
+    }
+
+    /// Produces a version of this function pointer with the given safety.
+    ///
+    /// # Safety
+    /// Caller must ensure that this function pointer is safe when casting to a safe function.
+    #[must_use]
+    unsafe fn with_safety<Safety: marker::Safety>(&self) -> with_safety!(Safety, Self)
+    where
+        Self: WithSafety<Safety>,
     {
         unsafe { FnPtr::from_ptr(self.as_ptr()) }
     }

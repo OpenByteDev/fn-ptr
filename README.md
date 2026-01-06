@@ -14,9 +14,7 @@ The trait provides associated types and constants to introspect function pointer
 
 ### 1. Function Pointer Metadata
 
-Every function pointer automatically implements [`FnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.FnPtr.html).
-Depending on the type, they also implement [`SafeFnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.SafeFnPtr.html), [`UnsafeFnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.UnsafeFnPtr.html), [`StaticFnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.StaticFnPtr.html) and [`HasAbi<Abi>`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.HasAbi.html).
-With it you can inspect the type of function:
+Every function pointer automatically implements [`FnPtr`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.FnPtr.html) as well as a bunch of other related traits. With these you can inspect the type of function pointers at compile time:
 
 ```rust
 use fn_ptr::{FnPtr, Abi};
@@ -26,7 +24,7 @@ type F = extern "C" fn(i32, i32) -> i32;
 assert_eq!(<F as FnPtr>::ARITY, 2);
 assert_eq!(<F as FnPtr>::IS_SAFE, true);
 assert_eq!(<F as FnPtr>::IS_EXTERN, true);
-assert_eq!(<F as FnPtr>::ABI, Abi::C);
+assert_eq!(<F as FnPtr>::ABI, Abi::C { unwind: false });
 ```
 
 There are also some const helper functons to do so ergonomically.
@@ -69,7 +67,7 @@ use fn_ptr::{with_abi, Abi};
 
 type F = extern "C" fn(i32) -> i32;
 
-type G = with_abi!(Abi::Sysv64, F);
+type G = with_abi!("sysv64", F);
 type H = with_abi!("C", extern "system" fn());
 ```
 
@@ -79,7 +77,7 @@ Or at the instance level:
 use fn_ptr::{FnPtr, abi};
 let rust_add: fn(i32, i32) -> i32 = |a, b| {a + b};
 // Safety: not actually safe!
-let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{abi!("C")}>() };
+let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<abi!("C")>() };
 ```
 
 Note that this does not change the underlying ABI and should be used with caution.
@@ -90,11 +88,11 @@ To implement the traits for all function pointer types, there is a large [macro]
 For the conversion macros the crate relies on two traits: [`WithAbi`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.WithAbi.html) and [`WithSafety`](https://docs.rs/fn-ptr/latest/fn_ptr/trait.WithSafety.html) that can also be used directly:
 
 ```rust
-use fn_ptr::{FnPtr, WithAbi, WithSafety, Abi};
+use fn_ptr::{FnPtr, WithAbi, WithSafety, marker::{SysV64, Unsafe}};
 
 type F = extern "C" fn(i32);
-type G = <F as WithAbi<{Abi::Sysv64}>>::F;
-type U = <F as WithSafety<{false}>>::F;
+type G = <F as WithAbi<SysV64>>::F;
+type U = <F as WithSafety<Unsafe>::F;
 ```
 
 ## License
