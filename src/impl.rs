@@ -45,10 +45,10 @@ macro_rules! impl_fn {
         #[cfg(has_abi_thiscall)]
         impl_fn!(@impl_u_and_s ($($nm : $ty),*), ThiscallUnwind, "thiscall-unwind");
 
-        // #[cfg(has_abi_vectorcall)]
-        // impl_fn!(@impl_u_and_s ($($nm : $ty),*), Vectorcall, "vectorcall");
-        // #[cfg(has_abi_vectorcall)]
-        // impl_fn!(@impl_u_and_s ($($nm : $ty),*), VectorcallUnwind, "vectorcall-unwind");
+        #[cfg(has_abi_vectorcall)]
+        impl_fn!(@impl_u_and_s ($($nm : $ty),*), Vectorcall, "vectorcall");
+        #[cfg(has_abi_vectorcall)]
+        impl_fn!(@impl_u_and_s ($($nm : $ty),*), VectorcallUnwind, "vectorcall-unwind");
 
         #[cfg(has_abi_win64)]
         impl_fn!(@impl_u_and_s ($($nm : $ty),*), Win64, "win64");
@@ -143,10 +143,10 @@ macro_rules! impl_fn {
         #[cfg(has_abi_thiscall)]
         impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "thiscall-unwind");
 
-        // #[cfg(has_abi_vectorcall)]
-        // impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "vectorcall");
-        // #[cfg(has_abi_vectorcall)]
-        // impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "vectorcall-unwind");
+        #[cfg(has_abi_vectorcall)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "vectorcall");
+        #[cfg(has_abi_vectorcall)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "vectorcall-unwind");
 
         #[cfg(has_abi_win64)]
         impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "win64");

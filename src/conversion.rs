@@ -41,6 +41,7 @@ impl<F: WithSafety<Safe>> AsSafe for F {}
 pub trait AsUnsafe: WithSafety<Unsafe> {}
 impl<F: WithSafety<Unsafe>> AsUnsafe for F {}
 
+cfg_tt::cfg_tt!{
 /// Helper trait that simplifies generic bounds when converting between funciton pointer types.
 pub trait Convertible:
     FnPtr
@@ -49,27 +50,26 @@ pub trait Convertible:
     + WithAbi<marker::CUnwind>
     + WithAbi<marker::System>
     + WithAbi<marker::SystemUnwind>
-    + WithAbi<marker::Rust>
-    + WithAbi<marker::Aapcs>
-    + WithAbi<marker::AapcsUnwind>
-    + WithAbi<marker::Cdecl>
-    + WithAbi<marker::CdeclUnwind>
-    + WithAbi<marker::Stdcall>
-    + WithAbi<marker::StdcallUnwind>
-    + WithAbi<marker::Fastcall>
-    + WithAbi<marker::FastcallUnwind>
-    + WithAbi<marker::Thiscall>
-    + WithAbi<marker::ThiscallUnwind>
-    + WithAbi<marker::Vectorcall>
-    + WithAbi<marker::VectorcallUnwind>
-    + WithAbi<marker::SysV64>
-    + WithAbi<marker::SysV64Unwind>
-    + WithAbi<marker::Win64>
-    + WithAbi<marker::Win64Unwind>
     + WithSafety<marker::Safe>
     + WithSafety<marker::Unsafe>
     + AsSafe
     + AsUnsafe
+    #[cfg(has_abi_aapcs)](+ WithAbi<marker::Aapcs>)
+    #[cfg(has_abi_aapcs)](+ WithAbi<marker::AapcsUnwind>)
+    #[cfg(has_abi_cdecl)](+ WithAbi<marker::Cdecl>)
+    #[cfg(has_abi_cdecl)](+ WithAbi<marker::CdeclUnwind>)
+    #[cfg(has_abi_stdcall)](+ WithAbi<marker::Stdcall>)
+    #[cfg(has_abi_stdcall)](+ WithAbi<marker::StdcallUnwind>)
+    #[cfg(has_abi_fastcall)](+ WithAbi<marker::Fastcall>)
+    #[cfg(has_abi_fastcall)](+ WithAbi<marker::FastcallUnwind>)
+    #[cfg(has_abi_thiscall)](+ WithAbi<marker::Thiscall>)
+    #[cfg(has_abi_thiscall)](+ WithAbi<marker::ThiscallUnwind>)
+    #[cfg(has_abi_vectorcall)](+ WithAbi<marker::Vectorcall>)
+    #[cfg(has_abi_vectorcall)](+ WithAbi<marker::VectorcallUnwind>)
+    #[cfg(has_abi_sysv64)](+ WithAbi<marker::SysV64>)
+    #[cfg(has_abi_sysv64)](+ WithAbi<marker::SysV64Unwind>)
+    #[cfg(has_abi_win64)](+ WithAbi<marker::Win64>)
+    #[cfg(has_abi_win64)](+ WithAbi<marker::Win64Unwind>)
 {
 }
 impl<T> Convertible for T
@@ -80,27 +80,28 @@ where
         + WithAbi<marker::CUnwind>
         + WithAbi<marker::System>
         + WithAbi<marker::SystemUnwind>
-        + WithAbi<marker::Aapcs>
-        + WithAbi<marker::AapcsUnwind>
-        + WithAbi<marker::Cdecl>
-        + WithAbi<marker::CdeclUnwind>
-        + WithAbi<marker::Stdcall>
-        + WithAbi<marker::StdcallUnwind>
-        + WithAbi<marker::Fastcall>
-        + WithAbi<marker::FastcallUnwind>
-        + WithAbi<marker::Thiscall>
-        + WithAbi<marker::ThiscallUnwind>
-        + WithAbi<marker::Vectorcall>
-        + WithAbi<marker::VectorcallUnwind>
-        + WithAbi<marker::SysV64>
-        + WithAbi<marker::SysV64Unwind>
-        + WithAbi<marker::Win64>
-        + WithAbi<marker::Win64Unwind>
         + WithSafety<marker::Safe>
         + WithSafety<marker::Unsafe>
         + AsSafe
-        + AsUnsafe,
+        + AsUnsafe
+        #[cfg(has_abi_aapcs)](+ WithAbi<marker::Aapcs>)
+        #[cfg(has_abi_aapcs)](+ WithAbi<marker::AapcsUnwind>)
+        #[cfg(has_abi_cdecl)](+ WithAbi<marker::Cdecl>)
+        #[cfg(has_abi_cdecl)](+ WithAbi<marker::CdeclUnwind>)
+        #[cfg(has_abi_stdcall)](+ WithAbi<marker::Stdcall>)
+        #[cfg(has_abi_stdcall)](+ WithAbi<marker::StdcallUnwind>)
+        #[cfg(has_abi_fastcall)](+ WithAbi<marker::Fastcall>)
+        #[cfg(has_abi_fastcall)](+ WithAbi<marker::FastcallUnwind>)
+        #[cfg(has_abi_thiscall)](+ WithAbi<marker::Thiscall>)
+        #[cfg(has_abi_thiscall)](+ WithAbi<marker::ThiscallUnwind>)
+        #[cfg(has_abi_vectorcall)](+ WithAbi<marker::Vectorcall>)
+        #[cfg(has_abi_vectorcall)](+ WithAbi<marker::VectorcallUnwind>)
+        #[cfg(has_abi_sysv64)](+ WithAbi<marker::SysV64>)
+        #[cfg(has_abi_sysv64)](+ WithAbi<marker::SysV64Unwind>)
+        #[cfg(has_abi_win64)](+ WithAbi<marker::Win64>)
+        #[cfg(has_abi_win64)](+ WithAbi<marker::Win64Unwind>)
 {}
+}
 
 /// Construct a function-pointer type identical to the given one but using
 /// the specified ABI.
