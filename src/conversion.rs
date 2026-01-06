@@ -1,33 +1,60 @@
-use crate::{FnPtr, HasAbi, HasSafety, abi::AbiKey};
+use crate::{
+    FnPtr,
+    markers::{self, Safe, Unsafe},
+};
 
-/// Computes the function pointer type obtained by changing the ABI
-/// while preserving arity, arguments, return type, and safety.
-pub trait WithAbi<const ABI: AbiKey> {
+/// Helper trait to change the ABI of a function pointer type while preserving arity, safety, and signature.
+pub trait WithAbi<Abi>: FnPtr
+where
+    Abi: markers::Abi,
+{
     /// The function pointer type with the requested ABI (preserving safety and signature).
-    type F: FnPtr + HasAbi<ABI>;
+    type F: FnPtr<
+            Args = Self::Args,
+            Output = Self::Output,
+            ArityMarker = Self::ArityMarker,
+            SafetyMarker = Self::SafetyMarker,
+            AbiMarker = Abi,
+        >;
 }
 
-/// Computes the function pointer type obtained by switching between safe/unsafe
-/// while preserving arity, ABI, and signature.
-pub trait WithSafety<const SAFE: bool> {
+/// Helper trait to change the safety of a function pointer type while preserving arity, ABI, and signature.
+pub trait WithSafety<Safety>: FnPtr
+where
+    Safety: markers::Safety,
+{
     /// The function pointer type with the requested safety (preserving ABI and signature).
-    type F: FnPtr + HasSafety<SAFE>;
+    type F: FnPtr<
+            Args = Self::Args,
+            Output = Self::Output,
+            ArityMarker = Self::ArityMarker,
+            SafetyMarker = Safety,
+            AbiMarker = Self::AbiMarker,
+        >;
 }
+
+/// Helper trait to compute the safe version of a function pointer type while preserving arity, ABI, and signature.
+pub trait AsSafe: WithSafety<Safe> {}
+impl<F: WithSafety<Safe>> AsSafe for F {}
+
+/// Helper trait to compute the unsafe version of a function pointer type while preserving arity, ABI, and signature.
+pub trait AsUnsafe: WithSafety<Unsafe> {}
+impl<F: WithSafety<Unsafe>> AsUnsafe for F {}
 
 /// Construct a function-pointer type identical to the given one but using
 /// the specified ABI.
 ///
 /// Accepts either:
-/// - an `Abi` value (e.g., `Abi::C`, `Abi::Sysv64`), or
+/// - an `Abi` value (e.g., `Abi::C`, `Abi::SysV64`), or
 /// - a string literal (e.g., `"C"`, `"system"`, `"stdcall"`).
 ///
 /// # Examples
 ///
 /// ```rust
-/// # use fn_ptr::{with_abi, Abi};
+/// # use fn_ptr::{with_abi, markers};
 /// type F = extern "C" fn(i32) -> i32;
 ///
-/// type G = with_abi!(Abi::Sysv64, F);
+/// type G = with_abi!(markers::SysV64, F);
 /// // `G` is `extern "sysv64" fn(i32) -> i32`
 ///
 /// type H = with_abi!("C", extern "system" fn());
@@ -35,14 +62,14 @@ pub trait WithSafety<const SAFE: bool> {
 /// ```
 #[macro_export]
 macro_rules! with_abi {
-    // ABI given as a path (Abi::C, Abi::Sysv64, ...)
+    // ABI given as a path (Abi::C, Abi::SysV64, ...)
     ( $abi:path, $ty:ty ) => {
-        <$ty as $crate::WithAbi<{ $crate::abi::key($abi) }>>::F
+        <$ty as $crate::WithAbi<$abi>>::F
     };
 
     // ABI given as a string literal
-    ( $abi_lit:literal, $ty:ty ) => {
-        <$ty as $crate::WithAbi<{ $crate::abi!($abi_lit) }>>::F
+    ( $abi_lit:tt, $ty:ty ) => {
+        <$ty as $crate::WithAbi<$crate::markers::abi!($abi_lit)>>::F
     };
 }
 
@@ -60,7 +87,7 @@ macro_rules! with_abi {
 #[macro_export]
 macro_rules! make_safe {
     ( $ty:ty ) => {
-        <$ty as $crate::WithSafety<{ true }>>::F
+        <$ty as $crate::WithSafety<$crate::markers::Safe>>::F
     };
 }
 
@@ -78,60 +105,6 @@ macro_rules! make_safe {
 #[macro_export]
 macro_rules! make_unsafe {
     ( $ty:ty ) => {
-        <$ty as $crate::WithSafety<{ false }>>::F
-    };
-}
-
-/// Convert a function-pointer type to an `extern` function that uses
-/// the specified ABI. Arguments, return type, and safety are preserved.
-///
-/// # Example
-///
-/// ```rust
-/// # use fn_ptr::{make_extern, Abi};
-/// type F = fn(i32) -> i32;
-/// type C = make_extern!(Abi::C, F);
-/// // `C` is `extern "C" fn(i32) -> i32`
-/// ```
-///
-/// Equivalent to:
-/// ```rust
-/// # use fn_ptr::{Abi, with_abi};
-/// # type F = fn(i32) -> i32;
-/// # type G =
-/// with_abi!(Abi::C, F)
-/// # ;
-/// ```
-#[macro_export]
-macro_rules! make_extern {
-    ( $abi:path, $ty:ty ) => {
-        $crate::with_abi!($abi, $ty)
-    };
-}
-
-/// Convert a function-pointer type to a Rust-ABI (`fn`) function while
-/// preserving its arguments, return type, and safety.
-///
-/// # Example
-///
-/// ```rust
-/// # use fn_ptr::make_non_extern;
-/// type F = extern "C" fn(i32) -> i32;
-/// type R = make_non_extern!(F);
-/// // `R` is `fn(i32) -> i32`
-/// ```
-///
-/// Equivalent to:
-/// ```rust
-/// # use fn_ptr::{Abi, with_abi};
-/// # type F = extern "C" fn(i32) -> i32;
-/// # type G =
-/// with_abi!(Abi::Rust, F)
-/// # ;
-/// ```
-#[macro_export]
-macro_rules! make_non_extern {
-    ( $ty:ty ) => {
-        $crate::with_abi!($crate::Abi::Rust, $ty)
+        <$ty as $crate::WithSafety<$crate::markers::Unsafe>>::F
     };
 }

@@ -1,204 +1,172 @@
-#[cfg(nightly_build)]
-use core::marker::ConstParamTy;
 use core::{
-    fmt::{Debug, Display},
+    fmt::{self, Debug, Display},
     str::FromStr,
 };
 
-use const_panic::concat_panic;
-
-/// The abi or calling convention of a function pointer.
-#[repr(u8)]
-#[cfg_attr(nightly_build, derive(ConstParamTy))]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+/// The ABI or calling convention of a function pointer.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+// from https://github.com/rust-lang/rust/blob/4fa80a5e733e2202d7ca4c203c2fdfda41cfe7dc/compiler/rustc_abi/src/extern_abi.rs#L21
 pub enum Abi {
-    /// The default ABI when you write a normal `fn foo()` in any Rust code.
-    Rust = 0,
+    /* universal */
     /// This is the same as `extern fn foo()`; whatever the default your C compiler supports.
-    C = 1,
-    /// Usually the same as [`extern "C"`](Abi::C), except on Win32, in which case it's [`"stdcall"`](Abi::Stdcall), or what you should use to link to the Windows API itself.
-    System = 2,
-    /// The default for C code on `x86_64` Windows.
-    Win64 = 3,
-    /// The default for C code on non-Windows `x86_64`.
-    Sysv64 = 4,
+    C { unwind: bool },
+    /// Usually the same as [`extern "C"`](Abi::C), except on Win32, in which case it's
+    /// [`"stdcall"`](Abi::Stdcall), or what you should use to link to the Windows API itself.
+    System { unwind: bool },
+
+    /// The default ABI when you write a normal `fn foo()` in any Rust code.
+    Rust,
+
+    /* arm */
     /// The default for ARM.
-    Aapcs = 5,
+    Aapcs { unwind: bool },
+
+    /* x86 */
     /// The default for `x86_32` C code.
-    Cdecl = 6,
+    Cdecl { unwind: bool },
     /// The default for the Win32 API on `x86_32`.
-    Stdcall = 7,
-    /// The `fastcall` ABI -- corresponds to MSVC's `__fastcall` and GCC and clang's `__attribute__((fastcall))`
-    Fastcall = 8,
-    /// The `vectorcall` ABI -- corresponds to MSVC's `__vectorcall` and GCC and clang's `__attribute__((vectorcall))`
-    Vectorcall = 9,
+    Stdcall { unwind: bool },
+    /// The `fastcall` ABI.
+    Fastcall { unwind: bool },
+    /// The Windows C++ ABI.
+    Thiscall { unwind: bool },
+    /// The `vectorcall` ABI.
+    Vectorcall { unwind: bool },
+
+    /* x86_64 */
+    /// The default for C code on non-Windows `x86_64`.
+    SysV64 { unwind: bool },
+    /// The default for C code on `x86_64` Windows.
+    Win64 { unwind: bool },
 }
 
 impl Abi {
-    /// Returns the string representation of this ABI.
     #[must_use]
-    pub const fn to_str(&self) -> &'static str {
-        match self {
-            Abi::Rust => "Rust",
-            Abi::C => "C",
-            Abi::System => "system",
-            Abi::Win64 => "win64",
-            Abi::Sysv64 => "sysv64",
-            Abi::Aapcs => "aapcs",
-            Abi::Cdecl => "cdecl",
-            Abi::Stdcall => "stdcall",
-            Abi::Fastcall => "fastcall",
-            Abi::Vectorcall => "vectorcall",
-        }
-    }
-}
+    pub fn canonize(self, has_c_varargs: bool) -> Option<Abi> {
+        // from https://github.com/rust-lang/rust/blob/4fa80a5e733e2202d7ca4c203c2fdfda41cfe7dc/compiler/rustc_target/src/spec/abi_map.rs#L79
+        let os_windows = cfg!(target_os = "windows");
+        let os_vexos = cfg!(target_os = "vexos");
 
-impl Abi {
-    /// Returns true if this ABI is an alias.
-    #[must_use]
-    pub fn is_alias(&self) -> bool {
-        matches!(self, Abi::C | Abi::System)
-    }
+        let arch_x86 = cfg!(target_arch = "x86");
+        let arch_x86_64 = cfg!(target_arch = "x86_64");
+        let arch_arm = cfg!(target_arch = "arm");
+        let arch_aarch64 = cfg!(target_arch = "aarch64");
+        let arch_arm_any = arch_arm || arch_aarch64;
 
-    /// Returns true if this ABI is a concrete ABI, not an alias.
-    #[must_use]
-    pub fn is_concrete(&self) -> bool {
-        !self.is_alias()
-    }
-
-    /// Returns the concrete ABI for this ABI on the current target.
-    #[must_use]
-    pub fn concrete(&self) -> Abi {
-        match self {
-            Abi::C => {
-                // "C" maps to platform default for C
-                if cfg!(target_os = "windows") && cfg!(target_arch = "x86_64") {
-                    Abi::Win64
-                } else if cfg!(target_arch = "x86_64") {
-                    Abi::Sysv64
-                } else if cfg!(target_arch = "x86") {
-                    Abi::Cdecl
-                } else if cfg!(target_arch = "arm") || cfg!(target_arch = "aarch64") {
-                    Abi::Aapcs
-                } else {
-                    Abi::Cdecl // fallback
-                }
+        let out = match self {
+            Abi::C { unwind } => Abi::C { unwind },
+            Abi::Rust => Abi::Rust,
+            Abi::System { unwind } if arch_x86 && os_windows && !has_c_varargs => {
+                Abi::Stdcall { unwind }
             }
-            Abi::System => {
-                if cfg!(target_os = "windows") && cfg!(target_arch = "x86_64") {
-                    Abi::Win64
-                } else if cfg!(target_os = "windows") && cfg!(target_arch = "x86") {
-                    Abi::Stdcall
-                } else if cfg!(target_arch = "x86_64") {
-                    Abi::Sysv64
-                } else if cfg!(target_arch = "x86") {
-                    Abi::Cdecl
-                } else if cfg!(target_arch = "arm") || cfg!(target_arch = "aarch64") {
-                    Abi::Aapcs
-                } else {
-                    Abi::Cdecl // fallback
-                }
+            Abi::System { unwind } if arch_arm && os_vexos => Abi::Aapcs { unwind },
+            Abi::System { unwind } => Abi::C { unwind },
+
+            // arm
+            Abi::Aapcs { unwind } if arch_arm_any => Abi::Aapcs { unwind },
+            Abi::Aapcs { .. } => return None,
+
+            // x86
+            Abi::Cdecl { unwind } if arch_x86 => Abi::C { unwind },
+            Abi::Cdecl { unwind } => Abi::C { unwind },
+
+            Abi::Fastcall { unwind } if arch_x86 => Abi::Fastcall { unwind },
+            Abi::Fastcall { unwind } if os_windows => Abi::C { unwind },
+            Abi::Fastcall { .. } => return None,
+
+            Abi::Stdcall { unwind } if arch_x86 => Abi::Stdcall { unwind },
+            Abi::Stdcall { unwind } if os_windows => Abi::C { unwind },
+            Abi::Stdcall { .. } => return None,
+
+            Abi::Thiscall { unwind } if arch_x86 => Abi::Thiscall { unwind },
+            Abi::Thiscall { .. } => return None,
+
+            Abi::Vectorcall { unwind } if arch_x86 || arch_x86_64 => {
+                Abi::Vectorcall { unwind }
             }
-            other => *other,
-        }
-    }
-}
+            Abi::Vectorcall { .. } => return None,
 
-impl FromStr for Abi {
-    type Err = ();
+            Abi::SysV64 { unwind } if arch_x86_64 => Abi::SysV64 { unwind },
+            Abi::Win64 { unwind } if arch_x86_64 => Abi::Win64 { unwind },
+            Abi::SysV64 { .. } | Abi::Win64 { .. } => return None,
+        };
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "" | "Rust" => Ok(Abi::Rust),
-            "C" => Ok(Abi::C),
-            "system" => Ok(Abi::System),
-            "win64" => Ok(Abi::Win64),
-            "sysv64" => Ok(Abi::Sysv64),
-            "aapcs" => Ok(Abi::Aapcs),
-            "cdecl" => Ok(Abi::Cdecl),
-            "stdcall" => Ok(Abi::Stdcall),
-            "fastcall" => Ok(Abi::Fastcall),
-            "vectorcall" => Ok(Abi::Vectorcall),
-            _ => Err(()),
-        }
+        Some(out)
     }
 }
 
 impl Display for Abi {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.to_str())
     }
 }
 
-/// Parse a string into an [`Abi`] if known, otherwise returns `None`.
-#[must_use]
-pub const fn parse(conv: &'static str) -> Option<Abi> {
-    if konst::eq_str(conv, "") || konst::eq_str(conv, "Rust") {
-        Some(Abi::Rust)
-    } else if konst::eq_str(conv, "C") {
-        Some(Abi::C)
-    } else if konst::eq_str(conv, "system") {
-        Some(Abi::System)
-    } else if konst::eq_str(conv, "win64") {
-        Some(Abi::Win64)
-    } else if konst::eq_str(conv, "sysv64") {
-        Some(Abi::Sysv64)
-    } else if konst::eq_str(conv, "aapcs") {
-        Some(Abi::Aapcs)
-    } else if konst::eq_str(conv, "cdecl") {
-        Some(Abi::Cdecl)
-    } else if konst::eq_str(conv, "stdcall") {
-        Some(Abi::Stdcall)
-    } else if konst::eq_str(conv, "fastcall") {
-        Some(Abi::Fastcall)
-    } else if konst::eq_str(conv, "vectorcall") {
-        Some(Abi::Vectorcall)
-    } else {
-        None
-    }
-}
+macro_rules! abi_kind_impl {
+    (
+        $t:ty => {
+            $(
+                $variant:ident $( { unwind: $uw:literal } )? => $tok:literal,
+            )*
+        }
+    ) => {
+        impl $t {
+            /// Returns the string representation of this ABI.
+            #[must_use]
+            pub const fn to_str(&self) -> &'static str {
+                match self {
+                    $( Self::$variant $( { unwind: $uw } )? => $tok, )*
+                }
+            }
 
-/// Parse a string into an [`Abi`] and panic if unknown.
-#[must_use]
-pub const fn parse_or_fail(conv: &'static str) -> Abi {
-    if let Some(c) = parse(conv) {
-        c
-    } else {
-        concat_panic!("invalid or unknown abi", conv)
-    }
-}
+            /// The same as the [`FromStr`] implementation, but (only!) for use in `const` contexts.
+            #[must_use]
+            pub const fn from_str_const(conv: &'static str) -> Option<Self> {
+                $(
+                    if konst::eq_str(conv, $tok) {
+                        return Some(Self::$variant $( { unwind: $uw } )?);
+                    }
+                )*
+                None
+            }
+        }
 
-#[cfg(nightly_build)]
-pub(crate) type AbiKey = Abi;
-#[cfg(not(nightly_build))]
-pub(crate) type AbiKey = u8;
+        impl FromStr for $t {
+            type Err = ();
 
-/// Returns the value used to designate the given ABI in const generics.
-/// For stable or beta builds this returns an [`u8`], while on nightly the [`Abi`] instance is returned.
-#[must_use]
-pub const fn key(abi: Abi) -> AbiKey {
-    abi as _
-}
-
-/// Converts an ABI string like "C" into the corresponding value for use in const generics.
-/// This is most useful for stable rust since there [`u8`]s are used.
-///
-/// # Example
-/// ```rust
-/// use fn_ptr::{abi, FnPtr};
-///
-/// fn add(a: i32, b: i32) -> i32 {
-///     a + b
-/// }
-///
-/// let f: fn(i32, i32) -> i32 = add;
-///
-/// let c_fn: extern "C" fn(i32, i32) -> i32 =
-///     unsafe { f.with_abi::<{ abi!("C") }>() };
-/// ```
-#[macro_export]
-macro_rules! abi {
-    ( $abi:literal ) => {
-        $crate::abi::key($crate::abi::parse_or_fail($abi))
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                match s {
+                    $( $tok => Ok(Self::$variant $( { unwind: $uw } )?), )*
+                    _ => Err(()),
+                }
+            }
+        }
     };
 }
+
+abi_kind_impl!(Abi => {
+    Rust => "Rust",
+
+    C { unwind: false } => "C",
+    C { unwind: true } => "C-unwind",
+    System { unwind: false } => "system",
+    System { unwind: true } => "system-unwind",
+
+    Aapcs { unwind: false } => "aapcs",
+    Aapcs { unwind: true } => "aapcs-unwind",
+
+    Cdecl { unwind: false } => "cdecl",
+    Cdecl { unwind: true } => "cdecl-unwind",
+    Stdcall { unwind: false } => "stdcall",
+    Stdcall { unwind: true } => "stdcall-unwind",
+    Fastcall { unwind: false } => "fastcall",
+    Fastcall { unwind: true } => "fastcall-unwind",
+    Thiscall { unwind: false } => "thiscall",
+    Thiscall { unwind: true } => "thiscall-unwind",
+    Vectorcall { unwind: false } => "vectorcall",
+    Vectorcall { unwind: true } => "vectorcall-unwind",
+
+    SysV64 { unwind: false } => "sysv64",
+    SysV64 { unwind: true } => "sysv64-unwind",
+    Win64 { unwind: false } => "win64",
+    Win64 { unwind: true } => "win64-unwind",
+});

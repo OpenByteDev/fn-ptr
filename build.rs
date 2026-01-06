@@ -8,25 +8,28 @@ fn main() {
         cargo_emit::rustc_cfg!("nightly");
     }
 
+    // from https://github.com/rust-lang/rust/blob/873122c006315e541c30809210089606877122c5/tests/ui/abi/unsupported.rs
     let t = build_target::target();
 
-    // x86: cdecl, stdcall and fastcall
     if t.arch == Arch::X86 {
         cargo_emit::rustc_cfg!("has_abi_cdecl");
         cargo_emit::rustc_cfg!("has_abi_stdcall");
         cargo_emit::rustc_cfg!("has_abi_fastcall");
+        cargo_emit::rustc_cfg!("has_abi_thiscall");
     }
 
-    // x86_64: Windows uses the Win64 ABI, other OSes use the SysV AMD64 ABI
+    if matches!(t.arch, Arch::X86 | Arch::X86_64) && cfg!(feature = "abi_vectorcall") {
+        cargo_emit::rustc_cfg!("has_abi_vectorcall");
+    }
+
     if t.arch == Arch::X86_64 {
         if t.os == Os::Windows {
-            cargo_emit::rustc_cfg!("has_abi_win64");
+            cargo_emit::rustc_cfg!("has_abi_win64")
         } else {
-            cargo_emit::rustc_cfg!("has_abi_sysv64");
+            cargo_emit::rustc_cfg!("has_abi_sysv64")
         }
     }
 
-    // ARM (32-bit) has aapcs
     if t.arch == Arch::Arm {
         cargo_emit::rustc_cfg!("has_abi_aapcs");
     }

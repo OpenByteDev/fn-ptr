@@ -1,4 +1,5 @@
-#![cfg_attr(nightly_build, feature(adt_const_params, fn_ptr_trait))]
+#![cfg_attr(nightly_build, fn_ptr_trait)]
+#![cfg_attr(feature = "abi_vectorcall", abi_vectorcall)]
 #![warn(clippy::pedantic)]
 #![no_std]
 
@@ -26,7 +27,7 @@
 //! assert_eq!(<F as FnPtr>::ARITY, 2);
 //! assert_eq!(<F as FnPtr>::IS_SAFE, true);
 //! assert_eq!(<F as FnPtr>::IS_EXTERN, true);
-//! assert_eq!(<F as FnPtr>::ABI, Abi::C);
+//! assert_eq!(<F as FnPtr>::ABI, Abi::C { unwind: false });
 //! ```
 //!
 //! There are also some const helper functons to do so ergonomically.
@@ -82,10 +83,10 @@
 //! Or at the instance level:
 //!
 //! ```rust
-//! use fn_ptr::{FnPtr, abi};
+//! use fn_ptr::{FnPtr, markers};
 //! let rust_add: fn(i32, i32) -> i32 = |a, b| {a + b};
 //! // Safety: not actually safe!
-//! let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<{abi!("C")}>() };
+//! let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<markers::abi!("C")>() };
 //! # assert_eq!(rust_add.addr(), c_add.addr());
 //! ```
 //!
@@ -115,6 +116,8 @@ pub mod abi;
 pub use abi::Abi;
 
 mod r#impl;
+
+pub mod markers;
 
 /// Prelude for this crate.
 pub mod prelude;

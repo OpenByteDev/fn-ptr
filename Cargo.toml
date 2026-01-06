@@ -28,14 +28,20 @@ rustc_version = "0.4"
 default = []
 stable = []
 nightly = []
+abi_vectorcall = ["nightly"]
 max-arity-12 = []
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
 	'cfg(nightly_build)',
+	
+	'cfg(has_abi_c_unwind)',
+	'cfg(has_abi_system_unwind)',
 	'cfg(has_abi_cdecl)',
 	'cfg(has_abi_stdcall)',
 	'cfg(has_abi_fastcall)',
+	'cfg(has_abi_thiscall)',
+	'cfg(has_abi_vectorcall)',
 	'cfg(has_abi_win64)',
 	'cfg(has_abi_sysv64)',
 	'cfg(has_abi_aapcs)'

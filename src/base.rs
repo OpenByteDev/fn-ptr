@@ -5,9 +5,11 @@ use core::{
 };
 
 use crate::{
-    WithAbi, WithSafety, abi,
-    abi::{Abi, AbiKey},
+    AsSafe, AsUnsafe, WithAbi,
+    abi::Abi,
     make_safe, make_unsafe,
+    markers::{self, Safe, Unsafe},
+    with_abi,
 };
 
 ffi_opaque::opaque! {
@@ -38,17 +40,19 @@ pub trait FnPtr:
     + Sized
     #[cfg(nightly_build)]
     (+ core::marker::FnPtr)
-    + WithSafety<true>
-    + WithSafety<false>
-    + WithAbi<{ abi!("Rust") }>
-    + WithAbi<{ abi!("C") }>
-    + WithAbi<{ abi!("system") }>
 {
     /// The argument types as a tuple.
     type Args;
 
     /// The return type.
     type Output;
+
+    /// Marker type denoting arity
+    type ArityMarker: markers::Arity;
+    /// Marker type denoting safety
+    type SafetyMarker: markers::Safety;
+    /// Marker type denoting abi
+    type AbiMarker: markers::Abi;
 
     /// The function's arity (number of arguments).
     const ARITY: usize;
@@ -88,7 +92,7 @@ pub trait FnPtr:
 
     /// Produces an unsafe version of this function pointer.
     #[must_use]
-    fn as_unsafe(&self) -> make_unsafe!(Self) {
+    fn as_unsafe(&self) -> make_unsafe!(Self) where Self: AsUnsafe {
         unsafe { FnPtr::from_ptr(self.as_ptr()) }
     }
 
@@ -97,7 +101,7 @@ pub trait FnPtr:
     /// # Safety
     /// Caller must ensure the underlying function is actually safe to call.
     #[must_use]
-    unsafe fn as_safe(&self) -> make_safe!(Self) {
+    unsafe fn as_safe(&self) -> make_safe!(Self) where Self: AsSafe {
         unsafe { FnPtr::from_ptr(self.as_ptr()) }
     }
 
@@ -106,17 +110,17 @@ pub trait FnPtr:
     /// # Safety
     /// Caller must ensure that the resulting ABI transformation is sound.
     #[must_use]
-    unsafe fn with_abi<const ABI: AbiKey>(&self) -> <Self as WithAbi<ABI>>::F
+    unsafe fn with_abi<Abi: markers::Abi>(&self) -> with_abi!(Abi, Self)
     where
-        Self: WithAbi<ABI>,
+        Self: WithAbi<Abi>,
     {
         unsafe { FnPtr::from_ptr(self.as_ptr()) }
     }
 }
 }
 
-/// Marker trait for all *safe* function pointer types (`fn` / `extern fn`).
-pub trait SafeFnPtr: FnPtr {
+/// Marker trait for all callable *safe* function pointer types (`fn` / `extern fn`).
+pub trait SafeFnPtr: FnPtr<SafetyMarker = Safe> {
     /// Invokes the function pointed to with the given args.
     ///
     /// # Examples
@@ -133,8 +137,8 @@ pub trait SafeFnPtr: FnPtr {
     fn invoke(&self, args: Self::Args) -> Self::Output;
 }
 
-/// Marker trait for all *unsafe* function pointer types (`unsafe fn` / `unsafe extern fn`).
-pub trait UnsafeFnPtr: FnPtr {
+/// Marker trait for all callable *unsafe* function pointer types (`unsafe fn` / `unsafe extern fn`).
+pub trait UnsafeFnPtr: FnPtr<SafetyMarker = Unsafe> {
     /// Invokes the function pointed to with the given args.
     ///
     /// # Safety
@@ -162,15 +166,14 @@ pub trait StaticFnPtr: FnPtr + 'static {}
 /// Marker trait implemented for function pointers of a specific ABI.
 ///
 /// For example:
-/// - `HasAbi<Abi::C>` for `extern "C" fn(...)`
-/// - `HasAbi<Abi::Sysv64>` for `extern "sysv64" fn(...)`
-pub trait HasAbi<const ABI: AbiKey>: FnPtr {}
+/// - `HasAbi<markers::C>` for `extern "C" fn(...)`
+/// - `HasAbi<markers::Sysv64>` for `extern "sysv64" fn(...)`
+pub trait HasAbi<Abi: markers::Abi>: FnPtr {}
 
 /// Marker trait denoting the safety of a function pointer type.
 ///
 /// For example:
-/// - `HasSafety<true>` for `extern "C" fn(...)`
-/// - `HasSafety<false>` for `unsafe fn(...)`
-pub trait HasSafety<const B: bool> {}
-impl<T: SafeFnPtr> HasSafety<true> for T {}
-impl<T: UnsafeFnPtr> HasSafety<false> for T {}
+/// - `HasSafety<Safe>` for `extern "C" fn(...)`
+/// - `HasSafety<Unsafe>` for `unsafe fn(...)`
+pub trait HasSafety<Safety: markers::Safety> {}
+impl<F: FnPtr> HasSafety<F::SafetyMarker> for F {}

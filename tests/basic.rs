@@ -27,7 +27,7 @@ fn extern_c_fn() {
     assert_eq!(arity::<F>(), 1);
     assert!(is_safe::<F>());
     assert!(is_extern::<F>());
-    assert_eq!(abi::<F>(), Abi::C);
+    assert_eq!(abi::<F>(), Abi::C { unwind: false });
 }
 
 #[test]
