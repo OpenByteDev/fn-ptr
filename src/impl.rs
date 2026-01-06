@@ -80,12 +80,12 @@ macro_rules! impl_fn {
             type Output = Ret;
 
             type ArityMarker = impl_fn!(@arity_marker ($($ty),*));
-            type SafetyMarker = $crate::markers::safety!($safety);
-            type AbiMarker = $crate::markers::$abi_ident;
+            type SafetyMarker = $crate::safety!($safety);
+            type AbiMarker = $crate::marker::$abi_ident;
 
-            const ARITY: ::core::primitive::usize = <Self::ArityMarker as $crate::markers::Arity>::N;
-            const IS_SAFE: ::core::primitive::bool = <Self::SafetyMarker as $crate::markers::Safety>::IS_SAFE;
-            const ABI: $crate::Abi = <$crate::markers::$abi_ident as $crate::markers::Abi>::KIND;
+            const ARITY: ::core::primitive::usize = <Self::ArityMarker as $crate::marker::Arity>::N;
+            const IS_SAFE: ::core::primitive::bool = <Self::SafetyMarker as $crate::marker::Safety>::IS_SAFE;
+            const ABI: $crate::Abi = <$crate::marker::$abi_ident as $crate::marker::Abi>::KIND;
             const IS_EXTERN: ::core::primitive::bool = !matches!(Self::ABI, $crate::Abi::Rust);
 
             fn as_ptr(&self) -> $crate::UntypedFnPtr {
@@ -104,17 +104,17 @@ macro_rules! impl_fn {
 
         // WithSafety
         #[automatically_derived]
-        impl<Ret, $($ty),*> $crate::WithSafety<$crate::markers::Safe> for $fn_type {
+        impl<Ret, $($ty),*> $crate::WithSafety<$crate::marker::Safe> for $fn_type {
             type F = extern $call_conv fn($($ty),*) -> Ret;
         }
         #[automatically_derived]
-        impl<Ret, $($ty),*> $crate::WithSafety<$crate::markers::Unsafe> for $fn_type {
+        impl<Ret, $($ty),*> $crate::WithSafety<$crate::marker::Unsafe> for $fn_type {
             type F = unsafe extern $call_conv fn($($ty),*) -> Ret;
         }
 
         // HasAbi
         #[automatically_derived]
-        impl<Ret, $($ty),*> $crate::HasAbi<$crate::markers::$abi_ident> for $fn_type {}
+        impl<Ret, $($ty),*> $crate::HasAbi<$crate::marker::$abi_ident> for $fn_type {}
 
         // WithAbi
         impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "Rust");
@@ -166,24 +166,24 @@ macro_rules! impl_fn {
 
     (@impl_withabi ($($nm:ident : $ty:ident),*), $fn_type:ty, $safety:tt, $abi:tt) => {
         #[automatically_derived]
-        impl<Ret, $($ty),*> $crate::WithAbi<$crate::markers::abi!($abi)> for $fn_type {
+        impl<Ret, $($ty),*> $crate::WithAbi<$crate::abi!($abi)> for $fn_type {
             type F = impl_fn!(@make_unsafe extern $abi fn($($ty),*) -> Ret, $safety);
         }
     };
 
-    (@arity_marker ()) => { $crate::markers::A0 };
-    (@arity_marker ($a:ty)) => { $crate::markers::A1 };
-    (@arity_marker ($a:ty, $b:ty)) => { $crate::markers::A2 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty)) => { $crate::markers::A3 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty)) => { $crate::markers::A4 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty)) => { $crate::markers::A5 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty)) => { $crate::markers::A6 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty)) => { $crate::markers::A7 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty, $h:ty)) => { $crate::markers::A8 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty, $h:ty, $i:ty)) => { $crate::markers::A9 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty, $h:ty, $i:ty, $j:ty)) => { $crate::markers::A10 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty, $h:ty, $i:ty, $j:ty, $k:ty)) => { $crate::markers::A11 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty, $h:ty, $i:ty, $j:ty, $k:ty, $l:ty)) => { $crate::markers::A12 };
+    (@arity_marker ()) => { $crate::marker::A0 };
+    (@arity_marker ($a:ty)) => { $crate::marker::A1 };
+    (@arity_marker ($a:ty, $b:ty)) => { $crate::marker::A2 };
+    (@arity_marker ($a:ty, $b:ty, $c:ty)) => { $crate::marker::A3 };
+    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty)) => { $crate::marker::A4 };
+    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty)) => { $crate::marker::A5 };
+    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty)) => { $crate::marker::A6 };
+    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty)) => { $crate::marker::A7 };
+    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty, $h:ty)) => { $crate::marker::A8 };
+    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty, $h:ty, $i:ty)) => { $crate::marker::A9 };
+    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty, $h:ty, $i:ty, $j:ty)) => { $crate::marker::A10 };
+    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty, $h:ty, $i:ty, $j:ty, $k:ty)) => { $crate::marker::A11 };
+    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty, $h:ty, $i:ty, $j:ty, $k:ty, $l:ty)) => { $crate::marker::A12 };
 
     (@make_unsafe $fn_type:ty, true) => { $fn_type };
     (@make_unsafe extern $abi:literal fn($($args:ty),*) -> $ret:ty, false) => {

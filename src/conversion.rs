@@ -1,11 +1,12 @@
 use crate::{
-    FnPtr, HasAbi, HasSafety, markers::{self, Safe, Unsafe}
+    FnPtr, HasAbi, HasSafety,
+    marker::{self, Safe, Unsafe},
 };
 
 /// Helper trait to change the ABI of a function pointer type while preserving arity, safety, and signature.
 pub trait WithAbi<Abi>: FnPtr
 where
-    Abi: markers::Abi,
+    Abi: marker::Abi,
 {
     /// The function pointer type with the requested ABI (preserving safety and signature).
     type F: FnPtr<
@@ -20,7 +21,7 @@ where
 /// Helper trait to change the safety of a function pointer type while preserving arity, ABI, and signature.
 pub trait WithSafety<Safety>: FnPtr
 where
-    Safety: markers::Safety,
+    Safety: marker::Safety,
 {
     /// The function pointer type with the requested safety (preserving ABI and signature).
     type F: FnPtr<
@@ -40,6 +41,38 @@ impl<F: WithSafety<Safe>> AsSafe for F {}
 pub trait AsUnsafe: WithSafety<Unsafe> {}
 impl<F: WithSafety<Unsafe>> AsUnsafe for F {}
 
+/// Helper trait that simplifies generic bounds when converting between funciton pointer types.
+pub trait Convertible:
+    FnPtr
+    + WithAbi<marker::Rust>
+    + WithAbi<marker::C>
+    + WithAbi<marker::CUnwind>
+    + WithAbi<marker::System>
+    + WithAbi<marker::SystemUnwind>
+    + WithAbi<marker::Rust>
+    + WithAbi<marker::Aapcs>
+    + WithAbi<marker::AapcsUnwind>
+    + WithAbi<marker::Cdecl>
+    + WithAbi<marker::CdeclUnwind>
+    + WithAbi<marker::Stdcall>
+    + WithAbi<marker::StdcallUnwind>
+    + WithAbi<marker::Fastcall>
+    + WithAbi<marker::FastcallUnwind>
+    + WithAbi<marker::Thiscall>
+    + WithAbi<marker::ThiscallUnwind>
+    + WithAbi<marker::Vectorcall>
+    + WithAbi<marker::VectorcallUnwind>
+    + WithAbi<marker::SysV64>
+    + WithAbi<marker::SysV64Unwind>
+    + WithAbi<marker::Win64>
+    + WithAbi<marker::Win64Unwind>
+    + WithSafety<marker::Safe>
+    + WithSafety<marker::Unsafe>
+    + AsSafe
+    + AsUnsafe
+{
+}
+
 /// Construct a function-pointer type identical to the given one but using
 /// the specified ABI.
 ///
@@ -50,10 +83,10 @@ impl<F: WithSafety<Unsafe>> AsUnsafe for F {}
 /// # Examples
 ///
 /// ```rust
-/// # use fn_ptr::{with_abi, markers};
+/// # use fn_ptr::{with_abi, marker};
 /// type F = extern "C" fn(i32) -> i32;
 ///
-/// type G = with_abi!(markers::SysV64, F);
+/// type G = with_abi!(marker::SysV64, F);
 /// // `G` is `extern "sysv64" fn(i32) -> i32`
 ///
 /// type H = with_abi!("C", extern "system" fn());
@@ -68,7 +101,7 @@ macro_rules! with_abi {
 
     // ABI given as a string literal
     ( $abi_lit:tt, $ty:ty ) => {
-        <$ty as $crate::WithAbi<$crate::markers::abi!($abi_lit)>>::F
+        <$ty as $crate::WithAbi<$crate::abi!($abi_lit)>>::F
     };
 }
 
@@ -86,7 +119,7 @@ macro_rules! with_abi {
 #[macro_export]
 macro_rules! make_safe {
     ( $ty:ty ) => {
-        <$ty as $crate::WithSafety<$crate::markers::Safe>>::F
+        <$ty as $crate::WithSafety<$crate::marker::Safe>>::F
     };
 }
 
@@ -104,6 +137,6 @@ macro_rules! make_safe {
 #[macro_export]
 macro_rules! make_unsafe {
     ( $ty:ty ) => {
-        <$ty as $crate::WithSafety<$crate::markers::Unsafe>>::F
+        <$ty as $crate::WithSafety<$crate::marker::Unsafe>>::F
     };
 }

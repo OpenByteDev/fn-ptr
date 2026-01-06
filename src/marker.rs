@@ -114,140 +114,138 @@ define_abi_marker!(SysV64Unwind, "sysv64-unwind");
 define_abi_marker!(Win64, "win64");
 define_abi_marker!(Win64Unwind, "win64-unwind");
 
-#[doc(hidden)]
+/// Macro to convert an integral number to the corresponding [`Arity`] marker type.
 #[macro_export]
-macro_rules! arity_marker {
+macro_rules! arity {
     (0) => {
-        $crate::markers::A0
+        $crate::marker::A0
     };
     (1) => {
-        $crate::markers::A1
+        $crate::marker::A1
     };
     (2) => {
-        $crate::markers::A2
+        $crate::marker::A2
     };
     (3) => {
-        $crate::markers::A3
+        $crate::marker::A3
     };
     (4) => {
-        $crate::markers::A4
+        $crate::marker::A4
     };
     (5) => {
-        $crate::markers::A5
+        $crate::marker::A5
     };
     (6) => {
-        $crate::markers::A6
+        $crate::marker::A6
     };
     (7) => {
-        $crate::markers::A7
+        $crate::marker::A7
     };
     (8) => {
-        $crate::markers::A8
+        $crate::marker::A8
     };
     (9) => {
-        $crate::markers::A9
+        $crate::marker::A9
     };
     (10) => {
-        $crate::markers::A10
+        $crate::marker::A10
     };
     (11) => {
-        $crate::markers::A11
+        $crate::marker::A11
     };
     (12) => {
-        $crate::markers::A12
+        $crate::marker::A12
     };
 }
 
-#[doc(hidden)]
+/// Macro to convert an ABI string to the corrsponding [`Abi`] marker type.
 #[macro_export]
-macro_rules! abi_marker {
+macro_rules! abi {
     // Common
     ("Rust") => {
-        $crate::markers::Rust
+        $crate::marker::Rust
     };
     ("C") => {
-        $crate::markers::C
+        $crate::marker::C
     };
     ("C-unwind") => {
-        $crate::markers::CUnwind
+        $crate::marker::CUnwind
     };
     ("system") => {
-        $crate::markers::System
+        $crate::marker::System
     };
     ("system-unwind") => {
-        $crate::markers::SystemUnwind
+        $crate::marker::SystemUnwind
     };
 
     // ARM
     ("aapcs") => {
-        $crate::markers::Aapcs
+        $crate::marker::Aapcs
     };
     ("aapcs-unwind") => {
-        $crate::markers::AapcsUnwind
+        $crate::marker::AapcsUnwind
     };
 
     // x86
     ("cdecl") => {
-        $crate::markers::Cdecl
+        $crate::marker::Cdecl
     };
     ("cdecl-unwind") => {
-        $crate::markers::CdeclUnwind
+        $crate::marker::CdeclUnwind
     };
     ("stdcall") => {
-        $crate::markers::Stdcall
+        $crate::marker::Stdcall
     };
     ("stdcall-unwind") => {
-        $crate::markers::StdcallUnwind
+        $crate::marker::StdcallUnwind
     };
     ("fastcall") => {
-        $crate::markers::Fastcall
+        $crate::marker::Fastcall
     };
     ("fastcall-unwind") => {
-        $crate::markers::FastcallUnwind
+        $crate::marker::FastcallUnwind
     };
     ("thiscall") => {
-        $crate::markers::Thiscall
+        $crate::marker::Thiscall
     };
     ("thiscall-unwind") => {
-        $crate::markers::ThiscallUnwind
+        $crate::marker::ThiscallUnwind
     };
     ("vectorcall") => {
-        $crate::markers::Vectorcall
+        $crate::marker::Vectorcall
     };
     ("vectorcall-unwind") => {
-        $crate::markers::VectorcallUnwind
+        $crate::marker::VectorcallUnwind
     };
 
     // x86_64
     ("sysv64") => {
-        $crate::markers::SysV64
+        $crate::marker::SysV64
     };
     ("sysv64-unwind") => {
-        $crate::markers::SysV64Unwind
+        $crate::marker::SysV64Unwind
     };
     ("win64") => {
-        $crate::markers::Win64
+        $crate::marker::Win64
     };
     ("win64-unwind") => {
-        $crate::markers::Win64Unwind
+        $crate::marker::Win64Unwind
     };
 }
 
-#[doc(hidden)]
+/// Macro to convert a safety token (`safe` or `unsafe`) or a boolean literal to the corrsponding [`Safety`] marker type.
 #[macro_export]
-macro_rules! safety_marker {
+macro_rules! safety {
     (safe) => {
-        $crate::markers::Safe
+        $crate::marker::Safe
     };
     (unsafe) => {
-        $crate::markers::Unsafe
+        $crate::marker::Unsafe
     };
     (true) => {
-        $crate::markers::Safe
+        $crate::marker::Safe
     };
     (false) => {
-        $crate::markers::Unsafe
+        $crate::marker::Unsafe
     };
 }
-
-pub use crate::{abi_marker as abi, arity_marker as arity, safety_marker as safety};

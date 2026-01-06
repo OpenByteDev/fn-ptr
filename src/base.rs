@@ -8,7 +8,7 @@ use crate::{
     AsSafe, AsUnsafe, WithAbi,
     abi::Abi,
     make_safe, make_unsafe,
-    markers::{self, Safe, Unsafe},
+    marker::{self, Safe, Unsafe},
     with_abi,
 };
 
@@ -48,11 +48,11 @@ pub trait FnPtr:
     type Output;
 
     /// Marker type denoting arity
-    type ArityMarker: markers::Arity;
+    type ArityMarker: marker::Arity;
     /// Marker type denoting safety
-    type SafetyMarker: markers::Safety;
+    type SafetyMarker: marker::Safety;
     /// Marker type denoting abi
-    type AbiMarker: markers::Abi;
+    type AbiMarker: marker::Abi;
 
     /// The function's arity (number of arguments).
     const ARITY: usize;
@@ -110,7 +110,7 @@ pub trait FnPtr:
     /// # Safety
     /// Caller must ensure that the resulting ABI transformation is sound.
     #[must_use]
-    unsafe fn with_abi<Abi: markers::Abi>(&self) -> with_abi!(Abi, Self)
+    unsafe fn with_abi<Abi: marker::Abi>(&self) -> with_abi!(Abi, Self)
     where
         Self: WithAbi<Abi>,
     {
@@ -166,14 +166,14 @@ pub trait StaticFnPtr: FnPtr + 'static {}
 /// Marker trait implemented for function pointers of a specific ABI.
 ///
 /// For example:
-/// - `HasAbi<markers::C>` for `extern "C" fn(...)`
-/// - `HasAbi<markers::Sysv64>` for `extern "sysv64" fn(...)`
-pub trait HasAbi<Abi: markers::Abi>: FnPtr {}
+/// - `HasAbi<marker::C>` for `extern "C" fn(...)`
+/// - `HasAbi<marker::Sysv64>` for `extern "sysv64" fn(...)`
+pub trait HasAbi<Abi: marker::Abi>: FnPtr {}
 
 /// Marker trait denoting the safety of a function pointer type.
 ///
 /// For example:
 /// - `HasSafety<Safe>` for `extern "C" fn(...)`
 /// - `HasSafety<Unsafe>` for `unsafe fn(...)`
-pub trait HasSafety<Safety: markers::Safety> {}
+pub trait HasSafety<Safety: marker::Safety> {}
 impl<F: FnPtr> HasSafety<F::SafetyMarker> for F {}

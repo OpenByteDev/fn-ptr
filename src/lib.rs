@@ -83,10 +83,10 @@
 //! Or at the instance level:
 //!
 //! ```rust
-//! use fn_ptr::{FnPtr, markers};
+//! use fn_ptr::{FnPtr, abi};
 //! let rust_add: fn(i32, i32) -> i32 = |a, b| {a + b};
 //! // Safety: not actually safe!
-//! let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<markers::abi!("C")>() };
+//! let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<abi!("C")>() };
 //! # assert_eq!(rust_add.addr(), c_add.addr());
 //! ```
 //!
@@ -118,7 +118,7 @@ pub use abi::Abi;
 mod r#impl;
 
 /// Module containing all marker types and traits.
-pub mod markers;
+pub mod marker;
 
 /// Prelude for this crate.
 pub mod prelude;
