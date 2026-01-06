@@ -1,5 +1,5 @@
 #![cfg_attr(nightly_build, fn_ptr_trait)]
-#![cfg_attr(feature = "abi_vectorcall", feature(abi_vectorcall))]
+#![cfg_attr(has_abi_vectorcall, feature(abi_vectorcall))]
 #![warn(clippy::pedantic, missing_docs)]
 #![no_std]
 
