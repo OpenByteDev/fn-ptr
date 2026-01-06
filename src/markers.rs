@@ -226,9 +226,6 @@ macro_rules! abi_marker {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! safety_marker {
-    () => {
-        $crate::markers::Safe
-    };
     (safe) => {
         $crate::markers::Safe
     };

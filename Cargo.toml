@@ -35,8 +35,6 @@ max-arity-12 = []
 unexpected_cfgs = { level = "warn", check-cfg = [
 	'cfg(nightly_build)',
 	
-	'cfg(has_abi_c_unwind)',
-	'cfg(has_abi_system_unwind)',
 	'cfg(has_abi_cdecl)',
 	'cfg(has_abi_stdcall)',
 	'cfg(has_abi_fastcall)',

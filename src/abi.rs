@@ -53,6 +53,7 @@ impl Abi {
         let arch_aarch64 = cfg!(target_arch = "aarch64");
         let arch_arm_any = arch_arm || arch_aarch64;
 
+        #[allow(clippy::match_same_arms)]
         let out = match self {
             Abi::C { unwind } => Abi::C { unwind },
             Abi::Rust => Abi::Rust,
