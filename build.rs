@@ -2,9 +2,9 @@ use build_target::{Arch, Os};
 
 fn main() {
     let version_meta = rustc_version::version_meta().unwrap();
-    if cfg!(feature = "nightly") && !cfg!(feature = "stable")
-        || version_meta.channel == rustc_version::Channel::Nightly
-    {
+    let use_nightly = cfg!(feature = "nightly") && !cfg!(feature = "stable")
+        || version_meta.channel == rustc_version::Channel::Nightly;
+    if use_nightly {
         cargo_emit::rustc_cfg!("nightly");
     }
 
@@ -18,7 +18,8 @@ fn main() {
         cargo_emit::rustc_cfg!("has_abi_thiscall");
     }
 
-    if matches!(t.arch, Arch::X86 | Arch::X86_64) && cfg!(feature = "abi_vectorcall") {
+    if matches!(t.arch, Arch::X86 | Arch::X86_64) && cfg!(feature = "abi_vectorcall") && use_nightly
+    {
         cargo_emit::rustc_cfg!("has_abi_vectorcall");
     }
 

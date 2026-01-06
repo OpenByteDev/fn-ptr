@@ -9,15 +9,15 @@ use core::{
 pub enum Abi {
     /* universal */
     /// This is the same as `extern fn foo()`; whatever the default your C compiler supports.
-    C { 
+    C {
         /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
-        unwind: bool
+        unwind: bool,
     },
     /// Usually the same as [`extern "C"`](Abi::C), except on Win32, in which case it's
     /// [`"stdcall"`](Abi::Stdcall), or what you should use to link to the Windows API itself.
     System {
         /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
-        unwind: bool
+        unwind: bool,
     },
 
     /// The default ABI when you write a normal `fn foo()` in any Rust code.
@@ -27,46 +27,46 @@ pub enum Abi {
     /// The default for ARM.
     Aapcs {
         /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
-        unwind: bool
+        unwind: bool,
     },
 
     /* x86 */
     /// The default for `x86_32` C code.
     Cdecl {
         /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
-        unwind: bool
+        unwind: bool,
     },
     /// The default for the Win32 API on `x86_32`.
     Stdcall {
         /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
-        unwind: bool
+        unwind: bool,
     },
     /// The `fastcall` ABI.
     Fastcall {
         /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
-        unwind: bool
+        unwind: bool,
     },
     /// The Windows C++ ABI.
     Thiscall {
         /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
-        unwind: bool
+        unwind: bool,
     },
     /// The `vectorcall` ABI.
     Vectorcall {
         /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
-        unwind: bool
+        unwind: bool,
     },
 
     /* x86_64 */
     /// The default for C code on non-Windows `x86_64`.
     SysV64 {
         /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
-        unwind: bool
+        unwind: bool,
     },
     /// The default for C code on `x86_64` Windows.
     Win64 {
         /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
-        unwind: bool
+        unwind: bool,
     },
 }
 
