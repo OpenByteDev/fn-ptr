@@ -1,6 +1,5 @@
 use crate::{
-    FnPtr,
-    markers::{self, Safe, Unsafe},
+    FnPtr, HasAbi, HasSafety, markers::{self, Safe, Unsafe}
 };
 
 /// Helper trait to change the ABI of a function pointer type while preserving arity, safety, and signature.
@@ -15,19 +14,7 @@ where
             ArityMarker = Self::ArityMarker,
             SafetyMarker = Self::SafetyMarker,
             AbiMarker = Abi,
-        >;
-}
-
-/// Helper trait to change the return type of a function pointer type while preserving arity, safety, ABI, and signature.
-pub trait WithReturn<T>: FnPtr {
-    /// The function pointer type with the requested safety (preserving ABI and signature).
-    type F: FnPtr<
-            Args = Self::Args,
-            Output = T,
-            ArityMarker = Self::ArityMarker,
-            SafetyMarker = Self::SafetyMarker,
-            AbiMarker = Self::AbiMarker,
-        >;
+        > + HasAbi<Abi>;
 }
 
 /// Helper trait to change the safety of a function pointer type while preserving arity, ABI, and signature.
@@ -42,7 +29,7 @@ where
             ArityMarker = Self::ArityMarker,
             SafetyMarker = Safety,
             AbiMarker = Self::AbiMarker,
-        >;
+        > + HasSafety<Safety>;
 }
 
 /// Helper trait to compute the safe version of a function pointer type while preserving arity, ABI, and signature.
