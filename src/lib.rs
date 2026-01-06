@@ -1,6 +1,6 @@
 #![cfg_attr(nightly_build, fn_ptr_trait)]
 #![cfg_attr(feature = "abi_vectorcall", feature(abi_vectorcall))]
-#![warn(clippy::pedantic)]
+#![warn(clippy::pedantic, missing_docs)]
 #![no_std]
 
 //! `fn-ptr` is a small utility crate that provides a [`FnPtr`] trait, implemented for all function pointer types:
@@ -117,6 +117,7 @@ pub use abi::Abi;
 
 mod r#impl;
 
+/// Module containing all marker types and traits.
 pub mod markers;
 
 /// Prelude for this crate.

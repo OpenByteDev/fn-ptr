@@ -1,9 +1,14 @@
+/// Type-level marker trait for function arity, from [`A0`] to [`A12`].
 pub trait Arity {
+    /// Number of parameters for this arity.
     const N: usize;
 }
 macro_rules! define_arity_marker {
     ($(($name:ident, $n:expr)),+ $(,)?) => {
         $(
+            #[doc = "Type-level marker for functions with exactly "]
+            #[doc = stringify!($n)]
+            #[doc = " parameters."]
             #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
             pub struct $name;
 
@@ -29,12 +34,16 @@ define_arity_marker!(
     (A12, 12),
 );
 
+/// Type-level marker trait for function safety, either [`Safe`] or [`Unsafe`].
 pub trait Safety {
+    /// `true` for safe functions, `false` for unsafe ones.
     const IS_SAFE: bool;
 }
 
+/// Marker type for safe functions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Safe;
+/// Marker type for unsafe functions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Unsafe;
 
@@ -45,7 +54,7 @@ impl Safety for Unsafe {
     const IS_SAFE: bool = false;
 }
 
-/// Type-level ABI marker trait.
+/// Type-level marker trait for function ABI.
 ///
 /// Types implementing this trait represent a specific `extern "..."` ABI.
 ///
@@ -62,6 +71,9 @@ pub trait Abi {
 macro_rules! define_abi_marker {
     ($name:ident, $lit:literal) => {
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        #[doc = "Type-level marker for the `"]
+        #[doc = $lit]
+        #[doc = "` ABI."]
         pub struct $name;
 
         impl Abi for $name {
@@ -149,12 +161,10 @@ macro_rules! arity_marker {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! abi_marker {
-    // Rust
+    // Common
     ("Rust") => {
         $crate::markers::Rust
     };
-
-    // Universal C / system
     ("C") => {
         $crate::markers::C
     };
@@ -176,7 +186,7 @@ macro_rules! abi_marker {
         $crate::markers::AapcsUnwind
     };
 
-    // x86 (32-bit)
+    // x86
     ("cdecl") => {
         $crate::markers::Cdecl
     };

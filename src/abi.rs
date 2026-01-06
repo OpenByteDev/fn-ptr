@@ -9,38 +9,74 @@ use core::{
 pub enum Abi {
     /* universal */
     /// This is the same as `extern fn foo()`; whatever the default your C compiler supports.
-    C { unwind: bool },
+    C { 
+        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        unwind: bool
+    },
     /// Usually the same as [`extern "C"`](Abi::C), except on Win32, in which case it's
     /// [`"stdcall"`](Abi::Stdcall), or what you should use to link to the Windows API itself.
-    System { unwind: bool },
+    System {
+        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        unwind: bool
+    },
 
     /// The default ABI when you write a normal `fn foo()` in any Rust code.
     Rust,
 
     /* arm */
     /// The default for ARM.
-    Aapcs { unwind: bool },
+    Aapcs {
+        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        unwind: bool
+    },
 
     /* x86 */
     /// The default for `x86_32` C code.
-    Cdecl { unwind: bool },
+    Cdecl {
+        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        unwind: bool
+    },
     /// The default for the Win32 API on `x86_32`.
-    Stdcall { unwind: bool },
+    Stdcall {
+        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        unwind: bool
+    },
     /// The `fastcall` ABI.
-    Fastcall { unwind: bool },
+    Fastcall {
+        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        unwind: bool
+    },
     /// The Windows C++ ABI.
-    Thiscall { unwind: bool },
+    Thiscall {
+        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        unwind: bool
+    },
     /// The `vectorcall` ABI.
-    Vectorcall { unwind: bool },
+    Vectorcall {
+        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        unwind: bool
+    },
 
     /* x86_64 */
     /// The default for C code on non-Windows `x86_64`.
-    SysV64 { unwind: bool },
+    SysV64 {
+        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        unwind: bool
+    },
     /// The default for C code on `x86_64` Windows.
-    Win64 { unwind: bool },
+    Win64 {
+        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        unwind: bool
+    },
 }
 
 impl Abi {
+    /// Canonicalize this ABI for the current target.
+    ///
+    /// Maps aliases (e.g. `system`, `cdecl`) to the concrete ABI actually used on
+    /// the current OS/architecture, following Rust compiler rules.
+    ///
+    /// Returns [`None`] if this ABI is not supported on the current target.
     #[must_use]
     pub fn canonize(self, has_c_varargs: bool) -> Option<Abi> {
         // from https://github.com/rust-lang/rust/blob/4fa80a5e733e2202d7ca4c203c2fdfda41cfe7dc/compiler/rustc_target/src/spec/abi_map.rs#L79
