@@ -41,7 +41,7 @@ impl<F: WithSafety<Safe>> AsSafe for F {}
 pub trait AsUnsafe: WithSafety<Unsafe> {}
 impl<F: WithSafety<Unsafe>> AsUnsafe for F {}
 
-cfg_tt::cfg_tt!{
+cfg_tt::cfg_tt! {
 /// Helper trait that simplifies generic bounds when converting between funciton pointer types.
 pub trait Convertible:
     FnPtr
