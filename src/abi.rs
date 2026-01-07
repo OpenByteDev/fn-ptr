@@ -71,6 +71,24 @@ pub enum Abi {
 }
 
 impl Abi {
+    /// Returns whether unwinding after a panic is allowed inside the called function.
+    #[must_use]
+    pub const fn allows_unwind(&self) -> bool {
+        match *self {
+            Abi::Rust => true,
+            Abi::C { unwind }
+            | Abi::System { unwind }
+            | Abi::Aapcs { unwind }
+            | Abi::Cdecl { unwind }
+            | Abi::Stdcall { unwind }
+            | Abi::Fastcall { unwind }
+            | Abi::Thiscall { unwind }
+            | Abi::Vectorcall { unwind }
+            | Abi::SysV64 { unwind }
+            | Abi::Win64 { unwind } => unwind,
+        }
+    }
+
     /// Canonicalize this ABI for the current target.
     ///
     /// Maps aliases (e.g. `system`, `cdecl`) to the concrete ABI actually used on

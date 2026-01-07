@@ -65,6 +65,9 @@ pub trait Abi {
 
     /// The runtime [`Abi`] that represent this marker type.
     const VALUE: crate::Abi;
+
+    /// The runtime [`Abi`] that represent this marker type.
+    const ALLOWS_UNWIND: bool = Self::VALUE.allows_unwind();
 }
 
 /// Helper macro to implement [`Abi`].
