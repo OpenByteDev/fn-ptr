@@ -3,7 +3,7 @@ use crate::{
     marker::{self, Safe, Unsafe},
 };
 
-/// Helper trait to change the ABI of a function pointer type while preserving arity, safety, and signature.
+/// Helper trait to change the ABI of a function pointer type while preserving arity, safety, signature, etc.
 pub trait WithAbi<Abi>: FnPtr
 where
     Abi: marker::Abi,
@@ -18,7 +18,7 @@ where
         > + HasAbi<Abi>;
 }
 
-/// Helper trait to change the safety of a function pointer type while preserving arity, ABI, and signature.
+/// Helper trait to change the safety of a function pointer type while preserving arity, ABI, signature, etc.
 pub trait WithSafety<Safety>: FnPtr
 where
     Safety: marker::Safety,
@@ -33,13 +33,26 @@ where
         > + HasSafety<Safety>;
 }
 
-/// Helper trait to compute the safe version of a function pointer type while preserving arity, ABI, and signature.
+/// Helper trait to compute the safe version of a function pointer type while preserving arity, ABI, signature, etc.
 pub trait AsSafe: WithSafety<Safe> {}
 impl<F: WithSafety<Safe>> AsSafe for F {}
 
-/// Helper trait to compute the unsafe version of a function pointer type while preserving arity, ABI, and signature.
+/// Helper trait to compute the unsafe version of a function pointer type while preserving arity, ABI, signature, etc.
 pub trait AsUnsafe: WithSafety<Unsafe> {}
 impl<F: WithSafety<Unsafe>> AsUnsafe for F {}
+
+/// Helper trait to change the return type of a function pointer type while preserving arguments, safety, signature, etc.
+pub trait WithOutput<T>: FnPtr {
+    /// The function pointer type with the requested return type.
+    type F: FnPtr<
+            Args = Self::Args,
+            Output = T,
+            ArityMarker = Self::ArityMarker,
+            SafetyMarker = Self::SafetyMarker,
+            AbiMarker = Self::AbiMarker,
+        >;
+}
+
 
 cfg_tt::cfg_tt! {
 /// Helper trait that simplifies generic bounds when converting between funciton pointer types.

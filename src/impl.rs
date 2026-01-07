@@ -102,6 +102,11 @@ macro_rules! impl_fn {
         impl<Ret: 'static, $($ty: 'static),*> $crate::StaticFnPtr for $fn_type {
         }
 
+        // WithOutput
+        #[automatically_derived]
+        impl<Output, Ret, $($ty),*> $crate::WithOutput<Output> for $fn_type {
+            type F = impl_fn!(@make_unsafe extern $call_conv fn($($ty),*) -> Output, $safety);
+        }
         // WithSafety
         #[automatically_derived]
         impl<Ret, $($ty),*> $crate::WithSafety<$crate::marker::Safe> for $fn_type {
