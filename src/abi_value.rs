@@ -200,15 +200,12 @@ macro_rules! abi_kind_impl {
 
 abi_kind_impl!(AbiValue => {
     Rust => "Rust",
-
     C { unwind: false } => "C",
     C { unwind: true } => "C-unwind",
     System { unwind: false } => "system",
     System { unwind: true } => "system-unwind",
-
     Aapcs { unwind: false } => "aapcs",
     Aapcs { unwind: true } => "aapcs-unwind",
-
     Cdecl { unwind: false } => "cdecl",
     Cdecl { unwind: true } => "cdecl-unwind",
     Stdcall { unwind: false } => "stdcall",
@@ -219,7 +216,6 @@ abi_kind_impl!(AbiValue => {
     Thiscall { unwind: true } => "thiscall-unwind",
     Vectorcall { unwind: false } => "vectorcall",
     Vectorcall { unwind: true } => "vectorcall-unwind",
-
     SysV64 { unwind: false } => "sysv64",
     SysV64 { unwind: true } => "sysv64-unwind",
     Win64 { unwind: false } => "win64",

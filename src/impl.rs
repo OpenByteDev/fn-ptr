@@ -98,19 +98,8 @@ macro_rules! impl_fn {
         impl_fn!(@impl_safe_fn_type ($($nm : $ty),*), $fn_type, $safety);
 
         #[automatically_derived]
-        impl<Output: 'static, $($ty: 'static),*> $crate::StaticFnPtr for $fn_type {
-        }
-
-        #[automatically_derived]
         impl<Output, $($ty),*> $crate::BuildFn<$crate::safety!($safety), $crate::abi::$abi_ident, Output> for ($($ty,)*) {
-            type F = impl_fn!(@make_unsafe extern $call_conv fn($($ty),*) -> Output, $safety);
-        }
-    };
-
-    (@impl_withabi ($($nm:ident : $ty:ident),*), $fn_type:ty, $safety:tt, $abi:tt) => {
-        #[automatically_derived]
-        impl<Output, $($ty),*> $crate::WithAbi<$crate::abi!($abi)> for $fn_type {
-            type F = impl_fn!(@make_unsafe extern $abi fn($($ty),*) -> Output, $safety);
+                type F = impl_fn!(@make_unsafe extern $call_conv fn($($ty),*) -> Output, $safety);
         }
     };
 
@@ -122,7 +111,7 @@ macro_rules! impl_fn {
     (@impl_safe_fn_type ($($nm:ident : $ty:ident),*), $fn_type:ty, true) => {
         #[automatically_derived]
         impl<Output, $($ty),*> $crate::SafeFnPtr for $fn_type {
-            fn invoke(&self, impl_fn!(@call_args ($($nm),*)): Self::Args) -> Self::Output {
+            fn invoke(&self, ($($nm,)*): Self::Args) -> Self::Output {
                 (*self)($($nm),*)
             }
         }
@@ -130,14 +119,11 @@ macro_rules! impl_fn {
     (@impl_safe_fn_type ($($nm:ident : $ty:ident),*), $fn_type:ty, false) => {
         #[automatically_derived]
         impl<Output, $($ty),*> $crate::UnsafeFnPtr for $fn_type {
-            unsafe fn invoke(&self, impl_fn!(@call_args ($($nm),*)): Self::Args) -> Self::Output {
+            unsafe fn invoke(&self, ($($nm,)*): Self::Args) -> Self::Output {
                 unsafe { (*self)($($nm),*) }
             }
         }
     };
-
-    (@call_args ($single:ident)) => { ($single,) };
-    (@call_args ($($args:ident),*)) => { ($($args),*) };
 }
 
 // Default: generate impls up to 6 arguments

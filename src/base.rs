@@ -211,3 +211,4 @@ pub trait UnsafeFnPtr: FnPtr<Safety = Unsafe> {
 /// Marker trait for all *static* function pointer types.
 /// The return type and all parameter types have to be `'static`.
 pub trait StaticFnPtr: FnPtr + 'static {}
+impl<F: FnPtr + 'static> StaticFnPtr for F {}
