@@ -19,25 +19,25 @@
 //! With these you can inspect the type of function pointers at compile time:
 //!
 //! ```rust
-//! use fn_ptr::{FnPtr, Abi};
+//! use fn_ptr::{FnPtr, AbiValue};
 //!
 //! type F = extern "C" fn(i32, i32) -> i32;
 //!
 //! assert_eq!(<F as FnPtr>::ARITY, 2);
 //! assert_eq!(<F as FnPtr>::IS_SAFE, true);
 //! assert_eq!(<F as FnPtr>::IS_EXTERN, true);
-//! assert_eq!(<F as FnPtr>::ABI, Abi::C { unwind: false });
+//! assert_eq!(<F as FnPtr>::ABI, AbiValue::C { unwind: false });
 //! ```
 //!
-//! There are also some const helper functons to do so ergonomically.
+//! There are also some const helper functions to do so ergonomically.
 //!
 //! ```rust
 //! # type F = extern "C" fn(i32, i32) -> i32;
-//! # use fn_ptr::{FnPtr, Abi};
+//! # use fn_ptr::{FnPtr, AbiValue};
 //! const A: usize = fn_ptr::arity::<F>();         // 2
 //! const SAFE: bool = fn_ptr::is_safe::<F>();     // true
 //! const EXT: bool = fn_ptr::is_extern::<F>();    // true
-//! const ABI: Abi = fn_ptr::abi::<F>();           // Abi::C
+//! const ABI: AbiValue = fn_ptr::abi::<F>();      // Abi::C
 //! ```
 //!
 //! ### 2. Toggle Function Pointer Safety
@@ -48,10 +48,10 @@
 //! use fn_ptr::{make_safe, make_unsafe};
 //!
 //! type U = unsafe extern "C" fn(i32);
-//! type S = make_safe!(U);       // extern "C" fn(i32)
+//! type S = make_safe!(U); // extern "C" fn(i32)
 //!
 //! type S2 = extern "C" fn(i32);
-//! type U2 = make_unsafe!(S2);   // unsafe extern "C" fn(i32)
+//! type U2 = make_unsafe!(S2); // unsafe extern "C" fn(i32)
 //! ```
 //!
 //! Or at the instance level:
@@ -73,8 +73,8 @@
 //!
 //! type F = extern "C" fn(i32) -> i32;
 //!
-//! type G = with_abi!("sysv64", F);
-//! type H = with_abi!("C", extern "system" fn());
+//! type G = with_abi!("sysv64", F); // extern "sysv64" fn(i32) -> i32
+//! type H = with_abi!("C", extern "system" fn()); // extern "C" fn()
 //! ```
 //!
 //! Or at the instance level:
@@ -95,11 +95,11 @@
 //! For the conversion macros the crate relies on two traits: [`WithAbi`] and [`WithSafety`] that can also be used directly:
 //!
 //! ```rust
-//! use fn_ptr::{FnPtr, WithAbi, WithSafety, marker::{SysV64, Unsafe}};
+//! use fn_ptr::{FnPtr, WithAbi, WithSafety, abi, safety};
 //!
 //! type F = extern "C" fn(i32);
-//! type G = <F as WithAbi<SysV64>>::F;
-//! type U = <F as WithSafety<Unsafe>>::F;
+//! type G = <F as WithAbi<abi::SysV64>>::F;
+//! type U = <F as WithSafety<safety::Unsafe>>::F;
 //! ```
 //!
 //! ## License
@@ -107,13 +107,20 @@
 //! Licensed under the MIT license, see [LICENSE](https://github.com/OpenByteDev/fn-ptr/blob/master/LICENSE) for details.
 
 /// Module containing the Abi abstraction.
-pub mod abi;
-pub use abi::Abi;
+mod abi_value;
+pub use abi_value::AbiValue;
 
 mod r#impl;
 
-/// Module containing all marker types and traits.
-pub mod marker;
+/// Module containing safety related marker types and traits.
+pub mod safety;
+pub use safety::Safety;
+/// Module containing abi related marker types and traits.
+pub mod abi;
+pub use abi::Abi;
+/// Module containing arity related marker types and traits.
+pub mod arity;
+pub use arity::Arity;
 
 /// Prelude for this crate.
 pub mod prelude;
@@ -121,8 +128,14 @@ pub mod prelude;
 mod base;
 pub use base::*;
 
-mod conversion;
-pub use conversion::*;
+mod build;
+pub use build::*;
+
+mod tuple;
+pub use tuple::*;
+
+mod conv;
+pub use conv::*;
 
 /// Returns the number of arguments of a function pointer type.
 #[must_use]
@@ -150,6 +163,6 @@ pub const fn is_extern<F: FnPtr>() -> bool {
 
 /// Returns the ABI of the function pointer.
 #[must_use]
-pub const fn abi<F: FnPtr>() -> Abi {
+pub const fn abi<F: FnPtr>() -> AbiValue {
     F::ABI
 }

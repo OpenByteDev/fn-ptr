@@ -68,25 +68,24 @@ macro_rules! impl_fn {
 
     // call for safe and unsafe
     (@impl_u_and_s ($($nm:ident : $ty:ident),*), $abi_ident:ident, $abi_str:expr) => {
-        impl_fn!(@impl_core ($($nm : $ty),*), extern $abi_str fn($($ty),*) -> Ret, true, $abi_ident, $abi_str);
-        impl_fn!(@impl_core ($($nm : $ty),*), unsafe extern $abi_str fn($($ty),*) -> Ret, false, $abi_ident, $abi_str);
+        impl_fn!(@impl_core ($($nm : $ty),*), extern $abi_str fn($($ty),*) -> Output, true, $abi_ident, $abi_str);
+        impl_fn!(@impl_core ($($nm : $ty),*), unsafe extern $abi_str fn($($ty),*) -> Output, false, $abi_ident, $abi_str);
     };
 
     // core macro
     (@impl_core ($($nm:ident : $ty:ident),*), $fn_type:ty, $safety:tt, $abi_ident:ident, $call_conv:expr) => {
         #[automatically_derived]
-        impl<Ret, $($ty),*> $crate::FnPtr for $fn_type {
+        impl<Output, $($ty),*> $crate::FnPtr for $fn_type {
             type Args = ($($ty,)*);
-            type Output = Ret;
+            type Output = Output;
 
-            type ArityMarker = impl_fn!(@arity_marker ($($ty),*));
-            type SafetyMarker = $crate::safety!($safety);
-            type AbiMarker = $crate::marker::$abi_ident;
+            type Safety = $crate::safety!($safety);
+            type Abi = $crate::abi::$abi_ident;
 
-            const ARITY: ::core::primitive::usize = <Self::ArityMarker as $crate::marker::Arity>::N;
-            const IS_SAFE: ::core::primitive::bool = <Self::SafetyMarker as $crate::marker::Safety>::IS_SAFE;
-            const ABI: $crate::Abi = <$crate::marker::$abi_ident as $crate::marker::Abi>::VALUE;
-            const IS_EXTERN: ::core::primitive::bool = !matches!(Self::ABI, $crate::Abi::Rust);
+            const ARITY: ::core::primitive::usize = <<Self::Args as $crate::tuple::Tuple>::Arity as $crate::arity::Arity>::N;
+            const IS_SAFE: ::core::primitive::bool = <Self::Safety as $crate::safety::Safety>::IS_SAFE;
+            const ABI: $crate::AbiValue = <$crate::abi::$abi_ident as $crate::abi::Abi>::VALUE;
+            const IS_EXTERN: ::core::primitive::bool = !matches!(Self::ABI, $crate::AbiValue::Rust);
 
             fn as_ptr(&self) -> $crate::UntypedFnPtr {
                 *self as $crate::UntypedFnPtr
@@ -99,105 +98,30 @@ macro_rules! impl_fn {
         impl_fn!(@impl_safe_fn_type ($($nm : $ty),*), $fn_type, $safety);
 
         #[automatically_derived]
-        impl<Ret: 'static, $($ty: 'static),*> $crate::StaticFnPtr for $fn_type {
+        impl<Output: 'static, $($ty: 'static),*> $crate::StaticFnPtr for $fn_type {
         }
 
-        // WithOutput
         #[automatically_derived]
-        impl<Output, Ret, $($ty),*> $crate::WithOutput<Output> for $fn_type {
+        impl<Output, $($ty),*> $crate::BuildFn<$crate::safety!($safety), $crate::abi::$abi_ident, Output> for ($($ty,)*) {
             type F = impl_fn!(@make_unsafe extern $call_conv fn($($ty),*) -> Output, $safety);
         }
-        // WithSafety
-        #[automatically_derived]
-        impl<Ret, $($ty),*> $crate::WithSafety<$crate::marker::Safe> for $fn_type {
-            type F = extern $call_conv fn($($ty),*) -> Ret;
-        }
-        #[automatically_derived]
-        impl<Ret, $($ty),*> $crate::WithSafety<$crate::marker::Unsafe> for $fn_type {
-            type F = unsafe extern $call_conv fn($($ty),*) -> Ret;
-        }
-
-        // HasAbi
-        #[automatically_derived]
-        impl<Ret, $($ty),*> $crate::HasAbi<$crate::marker::$abi_ident> for $fn_type {}
-
-        // WithAbi
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "Rust");
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "C");
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "system");
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "C-unwind");
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "system-unwind");
-
-        #[cfg(has_abi_cdecl)]
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "cdecl");
-        #[cfg(has_abi_cdecl)]
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "cdecl-unwind");
-
-        #[cfg(has_abi_stdcall)]
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "stdcall");
-        #[cfg(has_abi_stdcall)]
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "stdcall-unwind");
-
-        #[cfg(has_abi_fastcall)]
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "fastcall");
-        #[cfg(has_abi_fastcall)]
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "fastcall-unwind");
-
-        #[cfg(has_abi_thiscall)]
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "thiscall");
-        #[cfg(has_abi_thiscall)]
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "thiscall-unwind");
-
-        #[cfg(has_abi_vectorcall)]
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "vectorcall");
-        #[cfg(has_abi_vectorcall)]
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "vectorcall-unwind");
-
-        #[cfg(has_abi_win64)]
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "win64");
-        #[cfg(has_abi_win64)]
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "win64-unwind");
-
-        #[cfg(has_abi_sysv64)]
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "sysv64");
-        #[cfg(has_abi_sysv64)]
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "sysv64-unwind");
-
-        #[cfg(has_abi_aapcs)]
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "aapcs");
-        #[cfg(has_abi_aapcs)]
-        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "aapcs-unwind");
     };
 
     (@impl_withabi ($($nm:ident : $ty:ident),*), $fn_type:ty, $safety:tt, $abi:tt) => {
         #[automatically_derived]
-        impl<Ret, $($ty),*> $crate::WithAbi<$crate::abi!($abi)> for $fn_type {
-            type F = impl_fn!(@make_unsafe extern $abi fn($($ty),*) -> Ret, $safety);
+        impl<Output, $($ty),*> $crate::WithAbi<$crate::abi!($abi)> for $fn_type {
+            type F = impl_fn!(@make_unsafe extern $abi fn($($ty),*) -> Output, $safety);
         }
     };
 
-    (@arity_marker ()) => { $crate::marker::A0 };
-    (@arity_marker ($a:ty)) => { $crate::marker::A1 };
-    (@arity_marker ($a:ty, $b:ty)) => { $crate::marker::A2 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty)) => { $crate::marker::A3 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty)) => { $crate::marker::A4 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty)) => { $crate::marker::A5 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty)) => { $crate::marker::A6 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty)) => { $crate::marker::A7 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty, $h:ty)) => { $crate::marker::A8 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty, $h:ty, $i:ty)) => { $crate::marker::A9 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty, $h:ty, $i:ty, $j:ty)) => { $crate::marker::A10 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty, $h:ty, $i:ty, $j:ty, $k:ty)) => { $crate::marker::A11 };
-    (@arity_marker ($a:ty, $b:ty, $c:ty, $d:ty, $e:ty, $f:ty, $g:ty, $h:ty, $i:ty, $j:ty, $k:ty, $l:ty)) => { $crate::marker::A12 };
-
     (@make_unsafe $fn_type:ty, true) => { $fn_type };
-    (@make_unsafe extern $abi:literal fn($($args:ty),*) -> $ret:ty, false) => {
-        unsafe extern $abi fn($($args),*) -> $ret
+    (@make_unsafe extern $abi:literal fn($($args:ty),*) -> $Output:ty, false) => {
+        unsafe extern $abi fn($($args),*) -> $Output
     };
 
     (@impl_safe_fn_type ($($nm:ident : $ty:ident),*), $fn_type:ty, true) => {
         #[automatically_derived]
-        impl<Ret, $($ty),*> $crate::SafeFnPtr for $fn_type {
+        impl<Output, $($ty),*> $crate::SafeFnPtr for $fn_type {
             fn invoke(&self, impl_fn!(@call_args ($($nm),*)): Self::Args) -> Self::Output {
                 (*self)($($nm),*)
             }
@@ -205,7 +129,7 @@ macro_rules! impl_fn {
     };
     (@impl_safe_fn_type ($($nm:ident : $ty:ident),*), $fn_type:ty, false) => {
         #[automatically_derived]
-        impl<Ret, $($ty),*> $crate::UnsafeFnPtr for $fn_type {
+        impl<Output, $($ty),*> $crate::UnsafeFnPtr for $fn_type {
             unsafe fn invoke(&self, impl_fn!(@call_args ($($nm),*)): Self::Args) -> Self::Output {
                 unsafe { (*self)($($nm),*) }
             }

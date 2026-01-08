@@ -1,6 +1,6 @@
 #![allow(unpredictable_function_pointer_comparisons)]
 
-use fn_ptr::{Abi, FnPtr, SafeFnPtr, UnsafeFnPtr, abi, arity, is_extern, is_safe, is_unsafe};
+use fn_ptr::{AbiValue, FnPtr, SafeFnPtr, UnsafeFnPtr, abi, arity, is_extern, is_safe, is_unsafe};
 
 use static_assertions::assert_type_eq_all;
 
@@ -14,7 +14,7 @@ fn unsafe_fn() {
     assert_eq!(arity::<F>(), 1);
     assert!(is_unsafe::<F>());
     assert!(!is_extern::<F>());
-    assert_eq!(abi::<F>(), Abi::Rust);
+    assert_eq!(abi::<F>(), AbiValue::Rust);
 }
 
 #[test]
@@ -27,7 +27,7 @@ fn extern_c_fn() {
     assert_eq!(arity::<F>(), 1);
     assert!(is_safe::<F>());
     assert!(is_extern::<F>());
-    assert_eq!(abi::<F>(), Abi::C { unwind: false });
+    assert_eq!(abi::<F>(), AbiValue::C { unwind: false });
 }
 
 #[test]
@@ -40,7 +40,7 @@ fn zero_arg_fn() {
     assert_eq!(arity::<F>(), 0);
     assert!(is_safe::<F>());
     assert!(!is_extern::<F>());
-    assert_eq!(abi::<F>(), Abi::Rust);
+    assert_eq!(abi::<F>(), AbiValue::Rust);
 }
 
 #[test]
@@ -53,7 +53,7 @@ fn multi_arg_fn() {
     assert_eq!(arity::<F>(), 3);
     assert!(is_safe::<F>());
     assert!(!is_extern::<F>());
-    assert_eq!(abi::<F>(), Abi::Rust);
+    assert_eq!(abi::<F>(), AbiValue::Rust);
 }
 
 #[test]
@@ -66,7 +66,7 @@ fn no_ret() {
     assert_eq!(arity::<F>(), 1);
     assert!(is_safe::<F>());
     assert!(!is_extern::<F>());
-    assert_eq!(abi::<F>(), Abi::Rust);
+    assert_eq!(abi::<F>(), AbiValue::Rust);
 }
 
 #[test]
