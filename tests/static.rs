@@ -18,4 +18,3 @@ fn non_static_argument_does_not_implement_static_fn_ptr() {
     type F = fn(&i32);
     assert_not_impl_all!(F: StaticFnPtr);
 }
-

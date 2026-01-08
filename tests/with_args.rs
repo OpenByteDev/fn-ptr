@@ -5,7 +5,10 @@ use static_assertions::assert_type_eq_all;
 #[test]
 fn with_args_changes_args_preserving_output_safety_and_abi() {
     type F = unsafe extern "C" fn(i32) -> f64;
-    assert_type_eq_all!(with_args!((u8, u16), F), unsafe extern "C" fn(u8, u16) -> f64);
+    assert_type_eq_all!(
+        with_args!((u8, u16), F),
+        unsafe extern "C" fn(u8, u16) -> f64
+    );
 }
 
 #[test]
