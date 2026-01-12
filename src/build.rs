@@ -1,19 +1,14 @@
-use crate::{
-    FnPtr, Tuple, WithAbi, WithArgs, WithOutput, WithSafety,
-    abi::{self, Rust},
-    safety::{self, Safe},
-};
+use crate::{FnPtr, Tuple, abi::Rust, safety::Safe};
 
 /// Constructs a function-pointer type from its components.
 ///
 /// Given
 /// - a tuple of argument types (`Self`)
 /// - a safety marker ([`Safety`](crate::safety::Safety))
-/// - an ABI ([`Abi`](crate::abi::Abi))
+/// - an abi ([`Abi`](crate::abi::Abi))
 /// - an output type (`Output`)
 ///
-/// The trait is implemented for tuples of argument types and produces the
-/// corresponding function-pointer type via the associated type [`F`](BuildFn::F).
+/// The trait is implemented for tuples, which get turned into the parameter types of [`F`](BuildFn::F).
 ///
 /// # Examples
 ///
@@ -27,6 +22,10 @@ pub trait BuildFn<Safety = Safe, Abi = Rust, Output = ()>: Tuple {
     /// The resulting function-pointer type.
     type F: FnPtr<Args = Self, Output = Output, Safety = Safety, Abi = Abi>;
 }
+
+/*
+These blanket impls could replace a large portion of impl.rs but would lead to
+additional bounds when using the traits.
 
 impl<G: FnPtr, Args: BuildFn<G::Safety, G::Abi, G::Output>> WithArgs<Args> for G {
     type F = <Args as BuildFn<G::Safety, G::Abi, G::Output>>::F;
@@ -52,3 +51,4 @@ where
 {
     type F = <G::Args as BuildFn<G::Safety, Abi, G::Output>>::F;
 }
+*/

@@ -1,12 +1,12 @@
 use crate::AbiValue;
 
-/// Type-level marker trait for function ABI.
+/// Type-level marker trait for function abi.
 ///
-/// Types implementing this trait represent a specific `extern "..."` ABI.
+/// Types implementing this trait represent a specific `extern "..."` abi.
 ///
 /// See [`Abi`] for the runtime representation.
 pub trait Abi {
-    /// The exact ABI string used in `extern "..."`.
+    /// The exact abi string used in `extern "..."`.
     const STR: &'static str;
 
     /// The runtime [`Abi`] that represent this marker type.
@@ -22,7 +22,7 @@ macro_rules! define_abi_marker {
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
         #[doc = "Type-level marker for the `"]
         #[doc = $lit]
-        #[doc = "` ABI."]
+        #[doc = "` abi."]
         pub struct $name;
 
         impl Abi for $name {
@@ -63,7 +63,7 @@ define_abi_marker!(SysV64Unwind, "sysv64-unwind");
 define_abi_marker!(Win64, "win64");
 define_abi_marker!(Win64Unwind, "win64-unwind");
 
-/// Macro to convert an ABI string to the corrsponding [`Abi`] marker type.
+/// Macro to convert an abi string to the corresponding [`Abi`] marker type.
 #[macro_export]
 macro_rules! abi {
     // Common

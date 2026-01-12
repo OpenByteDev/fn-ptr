@@ -18,7 +18,7 @@ impl Safety for Unsafe {
     const IS_SAFE: bool = false;
 }
 
-/// Macro to convert a safety token (`safe` or `unsafe`) or a boolean literal to the corrsponding [`Safety`] marker type.
+/// Macro to convert a safety token (`safe` or `unsafe`) or a boolean literal to the corresponding [`Safety`] marker type.
 #[macro_export]
 macro_rules! safety {
     (safe) => {

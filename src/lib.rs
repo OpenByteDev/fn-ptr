@@ -3,108 +3,95 @@
 #![warn(clippy::pedantic, missing_docs)]
 #![no_std]
 
-//! `fn-ptr` is a small utility crate that provides a [`FnPtr`] trait, implemented for all function pointer types:
+//! `fn-ptr` is a utility crate for **introspecting** and **rewriting** function pointer types at compile time.
+//!
+//! It implements [`FnPtr`] for all function-pointer types:
 //! - `fn(T) -> U`
 //! - `unsafe fn(T) -> U`
-//! - `extern "C" fn(T)`
+//! - `extern "C-unwind" fn(T)`
 //! - `unsafe extern "sysv64" fn() -> i32`
 //!
-//! The trait provides associated types and constants to introspect function pointer types at compile time.
+//! ## Function pointer metadata
 //!
-//! ## Features
-//!
-//! ### 1. Function Pointer Metadata
-//!
-//! Every function pointer automatically implements [`FnPtr`] as well as a bunch of other related traits.
-//! With these you can inspect the type of function pointers at compile time:
+//! [`FnPtr`] exposes metadata as associated types/consts.
 //!
 //! ```rust
 //! use fn_ptr::{FnPtr, AbiValue};
 //!
 //! type F = extern "C" fn(i32, i32) -> i32;
-//!
 //! assert_eq!(<F as FnPtr>::ARITY, 2);
 //! assert_eq!(<F as FnPtr>::IS_SAFE, true);
 //! assert_eq!(<F as FnPtr>::IS_EXTERN, true);
 //! assert_eq!(<F as FnPtr>::ABI, AbiValue::C { unwind: false });
 //! ```
 //!
-//! There are also some const helper functions to do so ergonomically.
+//! Ergonomic const functions are provided as well:
 //!
 //! ```rust
 //! # type F = extern "C" fn(i32, i32) -> i32;
 //! # use fn_ptr::{FnPtr, AbiValue};
-//! const A: usize = fn_ptr::arity::<F>();         // 2
-//! const SAFE: bool = fn_ptr::is_safe::<F>();     // true
-//! const EXT: bool = fn_ptr::is_extern::<F>();    // true
-//! const ABI: AbiValue = fn_ptr::abi::<F>();      // Abi::C
+//! const A: usize = fn_ptr::arity::<F>();
+//! const SAFE: bool = fn_ptr::is_safe::<F>();
+//! const EXT: bool = fn_ptr::is_extern::<F>();
+//! const abi: AbiValue = fn_ptr::abi::<F>();
 //! ```
 //!
-//! ### 2. Toggle Function Pointer Safety
+//! ## Rewriting function-pointer types
 //!
-//! You can toggle the safety of a function pointer at the type level:
+//! The crate provides type-level rewriting via traits:
 //!
-//! ```rust
-//! use fn_ptr::{make_safe, make_unsafe};
+//! - **abi:** [`WithAbi`] / [`with_abi!`]
+//! - **Safety:** [`WithSafety`] / [`with_safety!`] ([`make_safe!`], [`make_unsafe!`])
+//! - **Output:** [`WithOutput`] / [`with_output!`]
+//! - **Args:** [`WithArgs`] / [`with_args!`]
 //!
-//! type U = unsafe extern "C" fn(i32);
-//! type S = make_safe!(U); // extern "C" fn(i32)
+//! ### Type-level transformations
 //!
-//! type S2 = extern "C" fn(i32);
-//! type U2 = make_unsafe!(S2); // unsafe extern "C" fn(i32)
-//! ```
-//!
-//! Or at the instance level:
+//! The macros compute a new function-pointer **type** while preserving everything else.
 //!
 //! ```rust
-//! # use fn_ptr::FnPtr;
-//! let safe_add: fn(i32, i32) -> i32 = |a, b| {a + b};
-//! let unsafe_add: unsafe fn(i32, i32) -> i32 = safe_add.as_unsafe();
-//! let safe_add2: fn(i32, i32) -> i32 = unsafe { unsafe_add.as_safe() };
-//! # assert_eq!(safe_add.addr(), safe_add2.addr());
-//! ```
-//!
-//! ### 3. Changing ABIs
-//!
-//! You can also change the ABI of a function pointer at the type level:
-//!
-//! ```rust
-//! use fn_ptr::{with_abi, Abi};
+//! use fn_ptr::{with_abi, with_safety, with_output, with_args};
 //!
 //! type F = extern "C" fn(i32) -> i32;
 //!
-//! type G = with_abi!("sysv64", F); // extern "sysv64" fn(i32) -> i32
-//! type H = with_abi!("C", extern "system" fn()); // extern "C" fn()
+//! type F1 = with_abi!("sysv64", F);   // extern "sysv64" fn(i32) -> i32
+//! type F2 = with_safety!(unsafe, F);  // unsafe extern "C" fn(i32) -> i32
+//! type F3 = with_output!(u64, F);     // extern "C" fn(i32) -> u64
+//! type F4 = with_args!((u8, u16), F); // extern "C" fn(u8, u16) -> i32
 //! ```
 //!
-//! Or at the instance level:
+//! ### Value-level casts
+//!
+//! The same transformations exist at the value level via methods on [`FnPtr`].
+//! These casts are only [`transmuting`](core::mem::transmute) and do **not** the actual underlying function.
 //!
 //! ```rust
 //! use fn_ptr::{FnPtr, abi};
-//! let rust_add: fn(i32, i32) -> i32 = |a, b| {a + b};
-//! // Safety: not actually safe!
-//! let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<abi!("C")>() };
-//! # assert_eq!(rust_add.addr(), c_add.addr());
+//!
+//! let f: fn(i32, i32) -> i32 = |a, b| a + b;
+//!
+//! // safety
+//! let u: unsafe fn(i32, i32) -> i32 = f.as_unsafe();
+//! let f2: fn(i32, i32) -> i32 = unsafe { u.as_safe() };
+//!
+//! // abi
+//! let c: extern "C" fn(i32, i32) -> i32 = unsafe { f.with_abi::<abi!("C")>() };
+//!
+//! // output
+//! let out: fn(i32, i32) -> u64 = unsafe { f.with_output::<u64>() };
+//!
+//! // args
+//! let args: fn(u8, u16) -> i32 = unsafe { f.with_args::<(u8, u16)>() };
+//!
+//! # assert_eq!(f.addr(), f2.addr());
+//! # assert_eq!(f.addr(), c.addr());
+//! # assert_eq!(f.addr(), out.addr());
+//! # assert_eq!(f.addr(), args.addr());
 //! ```
+//! ## How it works
 //!
-//! Note that this does not change the underlying ABI and should be used with caution.
-//!
-//! ## How It Works
-//!
-//! To implement the traits for all function pointer types, there is a large [macro](https://github.com/OpenByteDev/fn-ptr/blob/master/src/impl.rs).
-//! For the conversion macros the crate relies on two traits: [`WithAbi`] and [`WithSafety`] that can also be used directly:
-//!
-//! ```rust
-//! use fn_ptr::{FnPtr, WithAbi, WithSafety, abi, safety};
-//!
-//! type F = extern "C" fn(i32);
-//! type G = <F as WithAbi<abi::SysV64>>::F;
-//! type U = <F as WithSafety<safety::Unsafe>>::F;
-//! ```
-//!
-//! ## License
-//!
-//! Licensed under the MIT license, see [LICENSE](https://github.com/OpenByteDev/fn-ptr/blob/master/LICENSE) for details.
+//! Implementations are generated by a macro (see `src/impl.rs` in the repo). The rewrite macros are thin wrappers
+//! over the traits [`WithAbi`], [`WithSafety`], [`WithOutput`], [`WithArgs`] (and the corresponding `From` helper traits).
 
 /// Module containing the Abi abstraction.
 mod abi_value;
@@ -155,13 +142,13 @@ pub const fn is_unsafe<F: FnPtr>() -> bool {
     !is_safe::<F>()
 }
 
-/// Returns `true` if the function pointer uses an extern ABI.
+/// Returns `true` if the function pointer uses an external abi.
 #[must_use]
 pub const fn is_extern<F: FnPtr>() -> bool {
     F::IS_EXTERN
 }
 
-/// Returns the ABI of the function pointer.
+/// Returns the abi of the function pointer.
 #[must_use]
 pub const fn abi<F: FnPtr>() -> AbiValue {
     F::ABI

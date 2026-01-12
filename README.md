@@ -24,7 +24,7 @@ type F = extern "C" fn(i32, i32) -> i32;
 assert_eq!(<F as FnPtr>::ARITY, 2);
 assert_eq!(<F as FnPtr>::IS_SAFE, true);
 assert_eq!(<F as FnPtr>::IS_EXTERN, true);
-assert_eq!(<F as FnPtr>::ABI, Abi::C { unwind: false });
+assert_eq!(<F as FnPtr>::abi, Abi::C { unwind: false });
 ```
 
 There are also some const helper functons to do so ergonomically.
@@ -33,7 +33,7 @@ There are also some const helper functons to do so ergonomically.
 const A: usize = fn_ptr::arity::<F>();         // 2
 const SAFE: bool = fn_ptr::is_safe::<F>();     // true
 const EXT: bool = fn_ptr::is_extern::<F>();    // true
-const ABI: Abi = fn_ptr::abi::<F>();           // Abi::C
+const abi: Abi = fn_ptr::abi::<F>();           // Abi::C
 ```
 
 ### 2. Toggle Function Pointer Safety
@@ -60,7 +60,7 @@ let safe_add2: fn(i32, i32) -> i32 = unsafe { unsafe_add.as_safe() };
 
 ### 3. Changing ABIs
 
-You can also change the ABI of a function pointer at the type level:
+You can also change the abi of a function pointer at the type level:
 
 ```rust
 use fn_ptr::{with_abi, Abi};
@@ -80,7 +80,7 @@ let rust_add: fn(i32, i32) -> i32 = |a, b| {a + b};
 let c_add: extern "C" fn(i32, i32) -> i32 = unsafe { rust_add.with_abi::<abi!("C")>() };
 ```
 
-Note that this does not change the underlying ABI and should be used with caution.
+Note that this does not change the underlying abi and should be used with caution.
 
 ## How It Works
 

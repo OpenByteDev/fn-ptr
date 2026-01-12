@@ -5,7 +5,8 @@ use core::{
 };
 
 use crate::{
-    AsSafe, AsUnsafe, WithAbi, WithArgs, WithOutput, WithSafety, abi,
+    WithAbi, WithAbiImpl, WithArgs, WithArgsImpl, WithOutput, WithOutputImpl, WithSafety,
+    WithSafetyImpl, abi,
     abi_value::AbiValue,
     safety::{self, Safe, Unsafe},
     tuple::Tuple,
@@ -18,6 +19,8 @@ ffi_opaque::opaque! {
 
 /// Type alias for a raw untyped function pointer.
 pub type UntypedFnPtr = *const OpaqueFn;
+
+cfg_tt::cfg_tt! {}
 
 cfg_tt::cfg_tt! {
 /// Marker trait for all function pointers.
@@ -37,8 +40,32 @@ pub trait FnPtr:
     + UnwindSafe
     + RefUnwindSafe
     + Sized
-    #[cfg(nightly_build)]
-    (+ core::marker::FnPtr)
+    + WithOutputImpl
+    + WithArgsImpl
+    + WithSafetyImpl<safety::Safe>
+    + WithSafetyImpl<safety::Unsafe>
+    + WithAbiImpl<abi::Rust>
+    + WithAbiImpl<abi::C>
+    + WithAbiImpl<abi::CUnwind>
+    + WithAbiImpl<abi::System>
+    + WithAbiImpl<abi::SystemUnwind>
+    #[cfg(nightly_build)](+ core::marker::FnPtr)
+    #[cfg(has_abi_aapcs)](+ WithAbiImpl<abi::Aapcs>)
+    #[cfg(has_abi_aapcs)](+ WithAbiImpl<abi::AapcsUnwind>)
+    #[cfg(has_abi_cdecl)](+ WithAbiImpl<abi::Cdecl>)
+    #[cfg(has_abi_cdecl)](+ WithAbiImpl<abi::CdeclUnwind>)
+    #[cfg(has_abi_cdecl)](+ WithAbiImpl<abi::Stdcall>)
+    #[cfg(has_abi_cdecl)](+ WithAbiImpl<abi::StdcallUnwind>)
+    #[cfg(has_abi_cdecl)](+ WithAbiImpl<abi::Fastcall>)
+    #[cfg(has_abi_cdecl)](+ WithAbiImpl<abi::FastcallUnwind>)
+    #[cfg(has_abi_cdecl)](+ WithAbiImpl<abi::Thiscall>)
+    #[cfg(has_abi_cdecl)](+ WithAbiImpl<abi::ThiscallUnwind>)
+    #[cfg(has_abi_vectorcall)](+ WithAbiImpl<abi::Vectorcall>)
+    #[cfg(has_abi_vectorcall)](+ WithAbiImpl<abi::VectorcallUnwind>)
+    #[cfg(has_abi_sysv64)](+ WithAbiImpl<abi::SysV64>)
+    #[cfg(has_abi_sysv64)](+ WithAbiImpl<abi::SysV64Unwind>)
+    #[cfg(has_abi_win64)](+ WithAbiImpl<abi::Win64>)
+    #[cfg(has_abi_win64)](+ WithAbiImpl<abi::Win64Unwind>)
 {
     /// The argument types as a tuple.
     type Args: Tuple;
@@ -61,7 +88,7 @@ pub trait FnPtr:
     /// Whether the function pointer uses an extern calling convention.
     const IS_EXTERN: bool;
 
-    /// The ABI associated with this function pointer.
+    /// The abi associated with this function pointer.
     const ABI: AbiValue;
 
     /// Returns the address of this function.
@@ -99,10 +126,7 @@ pub trait FnPtr:
 
     /// Produces an unsafe version of this function pointer.
     #[must_use]
-    fn as_unsafe(&self) -> <Self as AsUnsafe>::F
-    where
-        Self: AsUnsafe,
-    {
+    fn as_unsafe(&self) -> <Self as WithSafety<Unsafe>>::F {
         unsafe { FnPtr::from_ptr(self.as_ptr()) }
     }
 
@@ -111,10 +135,7 @@ pub trait FnPtr:
     /// # Safety
     /// Caller must ensure the underlying function is actually safe to call.
     #[must_use]
-    unsafe fn as_safe(&self) -> <Self as AsSafe>::F
-    where
-        Self: AsSafe,
-    {
+    unsafe fn as_safe(&self) ->  <Self as WithSafety<Safe>>::F {
         self.cast()
     }
 
@@ -130,10 +151,10 @@ pub trait FnPtr:
         self.cast()
     }
 
-    /// Produces a version of this function pointer with the given ABI.
+    /// Produces a version of this function pointer with the given abi.
     ///
     /// # Safety
-    /// Caller must ensure that the resulting ABI transformation is sound.
+    /// Caller must ensure that the resulting abi transformation is sound.
     #[must_use]
     unsafe fn with_abi<Abi: abi::Abi>(&self) -> <Self as WithAbi<Abi>>::F
     where
@@ -147,7 +168,7 @@ pub trait FnPtr:
     /// # Safety
     /// Caller must ensure that the resulting transformation is sound.
     #[must_use]
-    unsafe fn with_ret<Output>(&self) -> <Self as WithOutput<Output>>::F
+    unsafe fn with_output<Output>(&self) -> <Self as WithOutput<Output>>::F
     where
         Self: WithOutput<Output>,
     {
@@ -212,3 +233,22 @@ pub trait UnsafeFnPtr: FnPtr<Safety = Unsafe> {
 /// The return type and all parameter types have to be `'static`.
 pub trait StaticFnPtr: FnPtr + 'static {}
 impl<F: FnPtr + 'static> StaticFnPtr for F {}
+
+#[cfg(test)]
+#[allow(unused)]
+mod test {
+    use super::*;
+
+    fn h<F: FnPtr>(f: F) -> crate::with_abi!("system", F) {
+        unsafe { f.cast() }
+    }
+    fn f<F: FnPtr>(f: F) -> crate::with_safety!(unsafe, F) {
+        unsafe { f.cast() }
+    }
+    fn j<F: FnPtr>(f: F) -> crate::with_output!(i32, F) {
+        unsafe { f.cast() }
+    }
+    fn k<F: FnPtr>(f: F) -> crate::with_args!((i32,), F) {
+        unsafe { f.cast() }
+    }
+}

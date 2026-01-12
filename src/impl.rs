@@ -1,4 +1,4 @@
-// NOTE: ABI target cfgs are provided by the build script as `has_abi_<name>`.
+// NOTE: abi target cfgs are provided by the build script as `has_abi_<name>`.
 
 macro_rules! impl_fn {
     // main entry point
@@ -99,7 +99,83 @@ macro_rules! impl_fn {
 
         #[automatically_derived]
         impl<Output, $($ty),*> $crate::BuildFn<$crate::safety!($safety), $crate::abi::$abi_ident, Output> for ($($ty,)*) {
-                type F = impl_fn!(@make_unsafe extern $call_conv fn($($ty),*) -> Output, $safety);
+            type F = impl_fn!(@make_unsafe extern $call_conv fn($($ty),*) -> Output, $safety);
+        }
+
+        // WithSafetyFrom
+        #[automatically_derived]
+        impl<Output, $($ty),*> $crate::WithSafetyImpl<$crate::safety::Safe> for $fn_type {
+            type F = extern $call_conv fn($($ty),*) -> Output;
+        }
+        #[automatically_derived]
+        impl<Output, $($ty),*> $crate::WithSafetyImpl<$crate::safety::Unsafe> for $fn_type {
+            type F = unsafe extern $call_conv fn($($ty),*) -> Output;
+        }
+
+        // WithArgsFrom
+        #[automatically_derived]
+        impl<Output, $($ty),*> $crate::WithArgsImpl<$fn_type> for $fn_type {
+            type F<Args: $crate::Tuple> = <<<Args::BaseFn as $crate::WithSafety<$crate::safety!($safety)>>::F as $crate::WithAbi<$crate::abi::$abi_ident>>::F as $crate::WithOutput<Output>>::F;
+        }
+
+        // WithRetFrom
+        #[automatically_derived]
+        impl<Output, $($ty),*> $crate::WithOutputImpl for $fn_type {
+            type F<R> = impl_fn!(@make_unsafe extern $call_conv fn($($ty),*) -> R, $safety);
+        }
+
+        // WithAbi
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "Rust");
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "C");
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "system");
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "C-unwind");
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "system-unwind");
+
+        #[cfg(has_abi_cdecl)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "cdecl");
+        #[cfg(has_abi_cdecl)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "cdecl-unwind");
+
+        #[cfg(has_abi_stdcall)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "stdcall");
+        #[cfg(has_abi_stdcall)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "stdcall-unwind");
+
+        #[cfg(has_abi_fastcall)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "fastcall");
+        #[cfg(has_abi_fastcall)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "fastcall-unwind");
+
+        #[cfg(has_abi_thiscall)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "thiscall");
+        #[cfg(has_abi_thiscall)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "thiscall-unwind");
+
+        #[cfg(has_abi_vectorcall)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "vectorcall");
+        #[cfg(has_abi_vectorcall)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "vectorcall-unwind");
+
+        #[cfg(has_abi_win64)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "win64");
+        #[cfg(has_abi_win64)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "win64-unwind");
+
+        #[cfg(has_abi_sysv64)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "sysv64");
+        #[cfg(has_abi_sysv64)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "sysv64-unwind");
+
+        #[cfg(has_abi_aapcs)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "aapcs");
+        #[cfg(has_abi_aapcs)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "aapcs-unwind");
+    };
+
+    (@impl_withabi ($($nm:ident : $ty:ident),*), $fn_type:ty, $safety:tt, $abi:tt) => {
+        #[automatically_derived]
+        impl<Output, $($ty),*> $crate::WithAbiImpl<$crate::abi!($abi)> for $fn_type {
+            type F = impl_fn!(@make_unsafe extern $abi fn($($ty),*) -> Output, $safety);
         }
     };
 

@@ -3,7 +3,7 @@ use crate::arity::{self, A0, A1, A2, A3, A4, A5, A6};
 use crate::arity::{A7, A8, A9, A10, A11, A12};
 
 cfg_tt::cfg_tt! {
-/// A trait implemented for all tuple types up to 6 or 12 with feature `max-arity-12` enabled.
+/// A trait implemented for all tuple types up to arity 6 (or 12 with feature `max-arity-12`).
 pub trait Tuple
     #[cfg(nightly_build)]
     (: core::marker::Tuple) {
@@ -14,6 +14,10 @@ pub trait Tuple
     /// - `(T,)` -> `A1`
     /// - `(T, U)` -> `A2`
     type Arity: arity::Arity;
+
+    #[doc(hidden)]
+    // This is required for WithArgs
+    type BaseFn: crate::FnPtr<Args = Self>;
 }
 }
 
@@ -23,6 +27,7 @@ macro_rules! impl_tuple {
     (0, $arity:ty) => {
         impl Tuple for () {
             type Arity = $arity;
+            type BaseFn = fn();
         }
     };
 
@@ -30,6 +35,7 @@ macro_rules! impl_tuple {
     ($n:tt, $arity:ty, ( $($T:ident),+ )) => {
         impl< $($T),+ > Tuple for ( $($T,)+ ) {
             type Arity = $arity;
+            type BaseFn = fn($($T,)+);
         }
     };
 }

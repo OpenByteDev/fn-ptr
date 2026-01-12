@@ -3,69 +3,69 @@ use core::{
     str::FromStr,
 };
 
-/// The ABI or calling convention of a function pointer.
+/// The abi or calling convention of a function pointer.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 // from https://github.com/rust-lang/rust/blob/4fa80a5e733e2202d7ca4c203c2fdfda41cfe7dc/compiler/rustc_abi/src/extern_abi.rs#L21
 pub enum AbiValue {
     /* universal */
     /// This is the same as `extern fn foo()`; whatever the default your C compiler supports.
     C {
-        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        /// Whether unwinding across this abi boundary is allowed (`*-unwind`).
         unwind: bool,
     },
     /// Usually the same as [`extern "C"`](AbiValue::C), except on Win32, in which case it's
     /// [`"stdcall"`](AbiValue::Stdcall), or what you should use to link to the Windows API itself.
     System {
-        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        /// Whether unwinding across this abi boundary is allowed (`*-unwind`).
         unwind: bool,
     },
 
-    /// The default ABI when you write a normal `fn foo()` in any Rust code.
+    /// The default abi when you write a normal `fn foo()` in any Rust code.
     Rust,
 
     /* arm */
     /// The default for ARM.
     Aapcs {
-        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        /// Whether unwinding across this abi boundary is allowed (`*-unwind`).
         unwind: bool,
     },
 
     /* x86 */
     /// The default for `x86_32` C code.
     Cdecl {
-        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        /// Whether unwinding across this abi boundary is allowed (`*-unwind`).
         unwind: bool,
     },
     /// The default for the Win32 API on `x86_32`.
     Stdcall {
-        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        /// Whether unwinding across this abi boundary is allowed (`*-unwind`).
         unwind: bool,
     },
-    /// The `fastcall` ABI.
+    /// The `fastcall` abi.
     Fastcall {
-        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        /// Whether unwinding across this abi boundary is allowed (`*-unwind`).
         unwind: bool,
     },
-    /// The Windows C++ ABI.
+    /// The Windows C++ abi.
     Thiscall {
-        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        /// Whether unwinding across this abi boundary is allowed (`*-unwind`).
         unwind: bool,
     },
-    /// The `vectorcall` ABI.
+    /// The `vectorcall` abi.
     Vectorcall {
-        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        /// Whether unwinding across this abi boundary is allowed (`*-unwind`).
         unwind: bool,
     },
 
     /* x86_64 */
     /// The default for C code on non-Windows `x86_64`.
     SysV64 {
-        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        /// Whether unwinding across this abi boundary is allowed (`*-unwind`).
         unwind: bool,
     },
     /// The default for C code on `x86_64` Windows.
     Win64 {
-        /// Whether unwinding across this ABI boundary is allowed (`*-unwind`).
+        /// Whether unwinding across this abi boundary is allowed (`*-unwind`).
         unwind: bool,
     },
 }
@@ -89,12 +89,12 @@ impl AbiValue {
         }
     }
 
-    /// Canonicalize this ABI for the current target.
+    /// Canonicalize this abi for the current target.
     ///
-    /// Maps aliases (e.g. `system`, `cdecl`) to the concrete ABI actually used on
+    /// Maps aliases (e.g. `system`, `cdecl`) to the concrete abi actually used on
     /// the current OS/architecture, following Rust compiler rules.
     ///
-    /// Returns [`None`] if this ABI is not supported on the current target.
+    /// Returns [`None`] if this abi is not supported on the current target.
     #[must_use]
     pub fn canonize(self, has_c_varargs: bool) -> Option<AbiValue> {
         // from https://github.com/rust-lang/rust/blob/4fa80a5e733e2202d7ca4c203c2fdfda41cfe7dc/compiler/rustc_target/src/spec/abi_map.rs#L79
@@ -165,7 +165,7 @@ macro_rules! abi_kind_impl {
         }
     ) => {
         impl $t {
-            /// Returns the string representation of this ABI.
+            /// Returns the string representation of this abi.
             #[must_use]
             pub const fn to_str(&self) -> &'static str {
                 match self {
