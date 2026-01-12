@@ -30,7 +30,7 @@ Ergonomic const functions are provided as well:
 const A: usize = fn_ptr::arity::<F>();
 const SAFE: bool = fn_ptr::is_safe::<F>();
 const EXT: bool = fn_ptr::is_extern::<F>();
-const abi: AbiValue = fn_ptr::abi::<F>();
+const ABI: AbiValue = fn_ptr::abi::<F>();
 ```
 
 ## Rewriting function-pointer types

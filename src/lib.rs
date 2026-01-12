@@ -33,7 +33,7 @@
 //! const A: usize = fn_ptr::arity::<F>();
 //! const SAFE: bool = fn_ptr::is_safe::<F>();
 //! const EXT: bool = fn_ptr::is_extern::<F>();
-//! const abi: AbiValue = fn_ptr::abi::<F>();
+//! const ABI: AbiValue = fn_ptr::abi::<F>();
 //! ```
 //!
 //! ## Rewriting function-pointer types
@@ -148,7 +148,7 @@ pub const fn is_extern<F: FnPtr>() -> bool {
     F::IS_EXTERN
 }
 
-/// Returns the abi of the function pointer.
+/// Returns a runtime representation of the abi of the function pointer.
 #[must_use]
 pub const fn abi<F: FnPtr>() -> AbiValue {
     F::ABI
