@@ -12,7 +12,7 @@ keywords = ["fn", "function", "fn_traits"]
 
 [dependencies]
 ffi-opaque = "2.0"
-konst = "0.4"
+konst = { version = "0.4", features = ["cmp"], default-features = false }
 cfg-tt = "0.3"
 
 [dev-dependencies]
