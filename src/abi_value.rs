@@ -68,6 +68,10 @@ pub enum AbiValue {
         /// Whether unwinding across this abi boundary is allowed (`*-unwind`).
         unwind: bool,
     },
+
+    /* Other */
+    /// UEFI ABI, usually an alias of C, but sometimes an arch-specific alias.
+    EfiApi,
 }
 
 impl AbiValue {
@@ -76,6 +80,7 @@ impl AbiValue {
     pub const fn allows_unwind(&self) -> bool {
         match *self {
             AbiValue::Rust => true,
+            AbiValue::EfiApi => false,
             AbiValue::C { unwind }
             | AbiValue::System { unwind }
             | AbiValue::Aapcs { unwind }
@@ -106,6 +111,8 @@ impl AbiValue {
         let arch_arm = cfg!(target_arch = "arm");
         let arch_aarch64 = cfg!(target_arch = "aarch64");
         let arch_arm_any = arch_arm || arch_aarch64;
+        let arch_riscv32 = cfg!(target_arch = "riscv32");
+        let arch_riscv64 = cfg!(target_arch = "riscv64");
 
         #[allow(clippy::match_same_arms)]
         let out = match self {
@@ -144,6 +151,13 @@ impl AbiValue {
             AbiValue::SysV64 { unwind } if arch_x86_64 => AbiValue::SysV64 { unwind },
             AbiValue::Win64 { unwind } if arch_x86_64 => AbiValue::Win64 { unwind },
             AbiValue::SysV64 { .. } | AbiValue::Win64 { .. } => return None,
+
+            AbiValue::EfiApi if arch_x86_64 => AbiValue::Win64 { unwind: false },
+            AbiValue::EfiApi if arch_arm => AbiValue::Aapcs { unwind: false },
+            AbiValue::EfiApi if arch_x86 || arch_aarch64 || arch_riscv32 || arch_riscv64 => {
+                AbiValue::C { unwind: false }
+            }
+            AbiValue::EfiApi => return None,
         };
 
         Some(out)
@@ -160,8 +174,8 @@ macro_rules! abi_kind_impl {
     (
         $t:ty => {
             $(
-                $variant:ident $( { unwind: $uw:literal } )? => $tok:literal,
-            )*
+                $variant:ident $( { unwind: $uw:literal } )? => $tok:literal
+            ),* $(,)?
         }
     ) => {
         impl $t {
@@ -220,4 +234,5 @@ abi_kind_impl!(AbiValue => {
     SysV64 { unwind: true } => "sysv64-unwind",
     Win64 { unwind: false } => "win64",
     Win64 { unwind: true } => "win64-unwind",
+    EfiApi => "efiapi"
 });

@@ -41,5 +41,6 @@ unexpected_cfgs = { level = "warn", check-cfg = [
 	'cfg(has_abi_vectorcall)',
 	'cfg(has_abi_win64)',
 	'cfg(has_abi_sysv64)',
-	'cfg(has_abi_aapcs)'
+	'cfg(has_abi_aapcs)',
+	'cfg(has_abi_efiapi)'
 ]}

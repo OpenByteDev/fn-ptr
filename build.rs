@@ -34,4 +34,11 @@ fn main() {
     if t.arch == Arch::Arm {
         cargo_emit::rustc_cfg!("has_abi_aapcs");
     }
+
+    if matches!(
+        t.arch,
+        Arch::X86 | Arch::X86_64 | Arch::Arm | Arch::AArch64 | Arch::Riscv32 | Arch::Riscv64
+    ) {
+        cargo_emit::rustc_cfg!("has_abi_efiapi");
+    }
 }

@@ -24,7 +24,7 @@ macro_rules! impl_fn {
         impl_fn!(@impl_u_and_s ($($nm : $ty),*), System, "system");
         impl_fn!(@impl_u_and_s ($($nm : $ty),*), SystemUnwind, "system-unwind");
 
-        // Common platform ABIs
+        // Platform-specific ABIs
         #[cfg(has_abi_cdecl)]
         impl_fn!(@impl_u_and_s ($($nm : $ty),*), Cdecl, "cdecl");
         #[cfg(has_abi_cdecl)]
@@ -64,6 +64,9 @@ macro_rules! impl_fn {
         impl_fn!(@impl_u_and_s ($($nm : $ty),*), Aapcs, "aapcs");
         #[cfg(has_abi_aapcs)]
         impl_fn!(@impl_u_and_s ($($nm : $ty),*), AapcsUnwind, "aapcs-unwind");
+
+        #[cfg(has_abi_efiapi)]
+        impl_fn!(@impl_u_and_s ($($nm : $ty),*), EfiApi, "efiapi");
     };
 
     // call for safe and unsafe
@@ -170,6 +173,9 @@ macro_rules! impl_fn {
         impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "aapcs");
         #[cfg(has_abi_aapcs)]
         impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "aapcs-unwind");
+
+        #[cfg(has_abi_efiapi)]
+        impl_fn!(@impl_withabi ($($nm : $ty),*), $fn_type, $safety, "efiapi");
     };
 
     (@impl_withabi ($($nm:ident : $ty:ident),*), $fn_type:ty, $safety:tt, $abi:tt) => {

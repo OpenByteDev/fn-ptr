@@ -63,6 +63,9 @@ define_abi_marker!(SysV64Unwind, "sysv64-unwind");
 define_abi_marker!(Win64, "win64");
 define_abi_marker!(Win64Unwind, "win64-unwind");
 
+// Other
+define_abi_marker!(EfiApi, "efiapi");
+
 /// Macro to convert an abi string to the corresponding [`Abi`] marker type.
 #[macro_export]
 macro_rules! abi {
@@ -135,5 +138,10 @@ macro_rules! abi {
     };
     ("win64-unwind") => {
         $crate::abi::Win64Unwind
+    };
+
+    // Other
+    ("efiapi") => {
+        $crate::abi::EfiApi
     };
 }

@@ -1,0 +1,351 @@
+   Compiling fn-ptr v0.9.0 (E:\Code\Rust\fn-ptr)
+error[E0277]: the trait bound `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Safe>>::F: conv::WithAbiImpl<EfiApi>` is not satisfied
+   --> src\impl.rs:121:43
+    |
+121 |               type F<Args: $crate::Tuple> = <<<Args::BaseFn as $crate::WithSafety<$crate::safety!($safety)>>::F as $crate::WithAbi<$crate::abi::$abi_ident>>::F as $crate::WithOutput<Output>>::F;
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `conv::WithAbiImpl<EfiApi>` is not implemented for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Safe>>::F`
+...
+213 | / impl_fn! {
+214 | |     __arg_0: A, __arg_1: B, __arg_2: C, __arg_3: D, __arg_4: E, __arg_5: F
+215 | | }
+    | |_- in this macro invocation
+    |
+note: required for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Safe>>::F` to implement `conv::WithAbi<EfiApi>`
+   --> src\conv.rs:33:56
+    |
+ 33 | impl<Abi: abi::Abi, F: FnPtr + WithAbiImpl<Abi, Self>> WithAbi<Abi> for F {
+    |                                ----------------------  ^^^^^^^^^^^^     ^
+    |                                |
+    |                                unsatisfied trait bound introduced here
+    = note: this error originates in the macro `impl_fn` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `<<Args as Tuple>::BaseFn as WithSafetyImpl<...>>::F: WithAbiImpl<...>` is not satisfied
+   --> src\impl.rs:121:43
+    |
+121 |               type F<Args: $crate::Tuple> = <<<Args::BaseFn as $crate::WithSafety<$crate::safety!($safety)>>::F as $crate::WithAbi<$crate::abi::$abi_ident>>::F as $crate::WithOutput<Output>>::F;
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `conv::WithAbiImpl<EfiApi>` is not implemented for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F`
+...
+213 | / impl_fn! {
+214 | |     __arg_0: A, __arg_1: B, __arg_2: C, __arg_3: D, __arg_4: E, __arg_5: F
+215 | | }
+    | |_- in this macro invocation
+    |
+note: required for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F` to implement `conv::WithAbi<EfiApi>`
+   --> src\conv.rs:33:56
+    |
+ 33 | impl<Abi: abi::Abi, F: FnPtr + WithAbiImpl<Abi, Self>> WithAbi<Abi> for F {
+    |                                ----------------------  ^^^^^^^^^^^^     ^
+    |                                |
+    |                                unsatisfied trait bound introduced here
+    = note: the full name for the type has been written to 'E:\Code\Rust\fn-ptr\target\debug\deps\fn_ptr-acb7406f96796546.long-type-13612155383168926235.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `impl_fn` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `<<Args as Tuple>::BaseFn as WithSafetyImpl<...>>::F: WithAbiImpl<...>` is not satisfied
+   --> src\impl.rs:121:43
+    |
+121 |               type F<Args: $crate::Tuple> = <<<Args::BaseFn as $crate::WithSafety<$crate::safety!($safety)>>::F as $crate::WithAbi<$crate::abi::$abi_ident>>::F as $crate::WithOutput<Output>>::F;
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `conv::WithAbiImpl<EfiApi>` is not implemented for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F`
+...
+213 | / impl_fn! {
+214 | |     __arg_0: A, __arg_1: B, __arg_2: C, __arg_3: D, __arg_4: E, __arg_5: F
+215 | | }
+    | |_- in this macro invocation
+    |
+note: required for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F` to implement `conv::WithAbi<EfiApi>`
+   --> src\conv.rs:33:56
+    |
+ 33 | impl<Abi: abi::Abi, F: FnPtr + WithAbiImpl<Abi, Self>> WithAbi<Abi> for F {
+    |                                ----------------------  ^^^^^^^^^^^^     ^
+    |                                |
+    |                                unsatisfied trait bound introduced here
+    = note: the full name for the type has been written to 'E:\Code\Rust\fn-ptr\target\debug\deps\fn_ptr-acb7406f96796546.long-type-9927225111786062105.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `impl_fn` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `<<Args as Tuple>::BaseFn as WithSafetyImpl<...>>::F: WithAbiImpl<...>` is not satisfied
+   --> src\impl.rs:121:43
+    |
+121 |               type F<Args: $crate::Tuple> = <<<Args::BaseFn as $crate::WithSafety<$crate::safety!($safety)>>::F as $crate::WithAbi<$crate::abi::$abi_ident>>::F as $crate::WithOutput<Output>>::F;
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `conv::WithAbiImpl<EfiApi>` is not implemented for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F`
+...
+213 | / impl_fn! {
+214 | |     __arg_0: A, __arg_1: B, __arg_2: C, __arg_3: D, __arg_4: E, __arg_5: F
+215 | | }
+    | |_- in this macro invocation
+    |
+note: required for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F` to implement `conv::WithAbi<EfiApi>`
+   --> src\conv.rs:33:56
+    |
+ 33 | impl<Abi: abi::Abi, F: FnPtr + WithAbiImpl<Abi, Self>> WithAbi<Abi> for F {
+    |                                ----------------------  ^^^^^^^^^^^^     ^
+    |                                |
+    |                                unsatisfied trait bound introduced here
+    = note: the full name for the type has been written to 'E:\Code\Rust\fn-ptr\target\debug\deps\fn_ptr-acb7406f96796546.long-type-14204725915888704850.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `impl_fn` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `<<Args as Tuple>::BaseFn as WithSafetyImpl<...>>::F: WithAbiImpl<...>` is not satisfied
+   --> src\impl.rs:121:43
+    |
+121 |               type F<Args: $crate::Tuple> = <<<Args::BaseFn as $crate::WithSafety<$crate::safety!($safety)>>::F as $crate::WithAbi<$crate::abi::$abi_ident>>::F as $crate::WithOutput<Output>>::F;
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `conv::WithAbiImpl<EfiApi>` is not implemented for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F`
+...
+213 | / impl_fn! {
+214 | |     __arg_0: A, __arg_1: B, __arg_2: C, __arg_3: D, __arg_4: E, __arg_5: F
+215 | | }
+    | |_- in this macro invocation
+    |
+note: required for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F` to implement `conv::WithAbi<EfiApi>`
+   --> src\conv.rs:33:56
+    |
+ 33 | impl<Abi: abi::Abi, F: FnPtr + WithAbiImpl<Abi, Self>> WithAbi<Abi> for F {
+    |                                ----------------------  ^^^^^^^^^^^^     ^
+    |                                |
+    |                                unsatisfied trait bound introduced here
+    = note: the full name for the type has been written to 'E:\Code\Rust\fn-ptr\target\debug\deps\fn_ptr-acb7406f96796546.long-type-6772600513424661085.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `impl_fn` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `<<Args as Tuple>::BaseFn as WithSafetyImpl<...>>::F: WithAbiImpl<...>` is not satisfied
+   --> src\impl.rs:121:43
+    |
+121 |               type F<Args: $crate::Tuple> = <<<Args::BaseFn as $crate::WithSafety<$crate::safety!($safety)>>::F as $crate::WithAbi<$crate::abi::$abi_ident>>::F as $crate::WithOutput<Output>>::F;
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `conv::WithAbiImpl<EfiApi>` is not implemented for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F`
+...
+213 | / impl_fn! {
+214 | |     __arg_0: A, __arg_1: B, __arg_2: C, __arg_3: D, __arg_4: E, __arg_5: F
+215 | | }
+    | |_- in this macro invocation
+    |
+note: required for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F` to implement `conv::WithAbi<EfiApi>`
+   --> src\conv.rs:33:56
+    |
+ 33 | impl<Abi: abi::Abi, F: FnPtr + WithAbiImpl<Abi, Self>> WithAbi<Abi> for F {
+    |                                ----------------------  ^^^^^^^^^^^^     ^
+    |                                |
+    |                                unsatisfied trait bound introduced here
+    = note: the full name for the type has been written to 'E:\Code\Rust\fn-ptr\target\debug\deps\fn_ptr-acb7406f96796546.long-type-11533195666208857984.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `impl_fn` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `<<Args as Tuple>::BaseFn as WithSafetyImpl<...>>::F: WithAbiImpl<...>` is not satisfied
+   --> src\impl.rs:121:43
+    |
+121 |               type F<Args: $crate::Tuple> = <<<Args::BaseFn as $crate::WithSafety<$crate::safety!($safety)>>::F as $crate::WithAbi<$crate::abi::$abi_ident>>::F as $crate::WithOutput<Output>>::F;
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `conv::WithAbiImpl<EfiApi>` is not implemented for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F`
+...
+213 | / impl_fn! {
+214 | |     __arg_0: A, __arg_1: B, __arg_2: C, __arg_3: D, __arg_4: E, __arg_5: F
+215 | | }
+    | |_- in this macro invocation
+    |
+note: required for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F` to implement `conv::WithAbi<EfiApi>`
+   --> src\conv.rs:33:56
+    |
+ 33 | impl<Abi: abi::Abi, F: FnPtr + WithAbiImpl<Abi, Self>> WithAbi<Abi> for F {
+    |                                ----------------------  ^^^^^^^^^^^^     ^
+    |                                |
+    |                                unsatisfied trait bound introduced here
+    = note: the full name for the type has been written to 'E:\Code\Rust\fn-ptr\target\debug\deps\fn_ptr-acb7406f96796546.long-type-14568257555814653465.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `impl_fn` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `<<Args as Tuple>::BaseFn as WithSafetyImpl<...>>::F: WithAbiImpl<...>` is not satisfied
+   --> src\impl.rs:121:43
+    |
+121 |               type F<Args: $crate::Tuple> = <<<Args::BaseFn as $crate::WithSafety<$crate::safety!($safety)>>::F as $crate::WithAbi<$crate::abi::$abi_ident>>::F as $crate::WithOutput<Output>>::F;
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `conv::WithAbiImpl<EfiApi>` is not implemented for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F`
+...
+213 | / impl_fn! {
+214 | |     __arg_0: A, __arg_1: B, __arg_2: C, __arg_3: D, __arg_4: E, __arg_5: F
+215 | | }
+    | |_- in this macro invocation
+    |
+note: required for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F` to implement `conv::WithAbi<EfiApi>`
+   --> src\conv.rs:33:56
+    |
+ 33 | impl<Abi: abi::Abi, F: FnPtr + WithAbiImpl<Abi, Self>> WithAbi<Abi> for F {
+    |                                ----------------------  ^^^^^^^^^^^^     ^
+    |                                |
+    |                                unsatisfied trait bound introduced here
+    = note: the full name for the type has been written to 'E:\Code\Rust\fn-ptr\target\debug\deps\fn_ptr-acb7406f96796546.long-type-8700587519034644055.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `impl_fn` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Safe>>::F: conv::WithAbiImpl<EfiApi>` is not satisfied
+   --> src\impl.rs:121:44
+    |
+121 |               type F<Args: $crate::Tuple> = <<<Args::BaseFn as $crate::WithSafety<$crate::safety!($safety)>>::F as $crate::WithAbi<$crate::abi::$abi_ident>>::F as...
+    |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `conv::WithAbiImpl<EfiApi>` is not implemented for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Safe>>::F`
+...
+213 | / impl_fn! {
+214 | |     __arg_0: A, __arg_1: B, __arg_2: C, __arg_3: D, __arg_4: E, __arg_5: F
+215 | | }
+    | |_- in this macro invocation
+    |
+note: required for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Safe>>::F` to implement `conv::WithAbi<EfiApi>`
+   --> src\conv.rs:33:56
+    |
+ 33 | impl<Abi: abi::Abi, F: FnPtr + WithAbiImpl<Abi, Self>> WithAbi<Abi> for F {
+    |                                ----------------------  ^^^^^^^^^^^^     ^
+    |                                |
+    |                                unsatisfied trait bound introduced here
+    = note: this error originates in the macro `impl_fn` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `<<Args as Tuple>::BaseFn as WithSafetyImpl<...>>::F: WithAbiImpl<...>` is not satisfied
+   --> src\impl.rs:121:44
+    |
+121 |               type F<Args: $crate::Tuple> = <<<Args::BaseFn as $crate::WithSafety<$crate::safety!($safety)>>::F as $crate::WithAbi<$crate::abi::$abi_ident>>::F as...
+    |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `conv::WithAbiImpl<EfiApi>` is not implemented for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F`
+...
+213 | / impl_fn! {
+214 | |     __arg_0: A, __arg_1: B, __arg_2: C, __arg_3: D, __arg_4: E, __arg_5: F
+215 | | }
+    | |_- in this macro invocation
+    |
+note: required for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F` to implement `conv::WithAbi<EfiApi>`
+   --> src\conv.rs:33:56
+    |
+ 33 | impl<Abi: abi::Abi, F: FnPtr + WithAbiImpl<Abi, Self>> WithAbi<Abi> for F {
+    |                                ----------------------  ^^^^^^^^^^^^     ^
+    |                                |
+    |                                unsatisfied trait bound introduced here
+    = note: the full name for the type has been written to 'E:\Code\Rust\fn-ptr\target\debug\deps\fn_ptr-acb7406f96796546.long-type-13612155383168926235.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `impl_fn` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `<<Args as Tuple>::BaseFn as WithSafetyImpl<...>>::F: WithAbiImpl<...>` is not satisfied
+   --> src\impl.rs:121:44
+    |
+121 |               type F<Args: $crate::Tuple> = <<<Args::BaseFn as $crate::WithSafety<$crate::safety!($safety)>>::F as $crate::WithAbi<$crate::abi::$abi_ident>>::F as...
+    |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `conv::WithAbiImpl<EfiApi>` is not implemented for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F`
+...
+213 | / impl_fn! {
+214 | |     __arg_0: A, __arg_1: B, __arg_2: C, __arg_3: D, __arg_4: E, __arg_5: F
+215 | | }
+    | |_- in this macro invocation
+    |
+note: required for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F` to implement `conv::WithAbi<EfiApi>`
+   --> src\conv.rs:33:56
+    |
+ 33 | impl<Abi: abi::Abi, F: FnPtr + WithAbiImpl<Abi, Self>> WithAbi<Abi> for F {
+    |                                ----------------------  ^^^^^^^^^^^^     ^
+    |                                |
+    |                                unsatisfied trait bound introduced here
+    = note: the full name for the type has been written to 'E:\Code\Rust\fn-ptr\target\debug\deps\fn_ptr-acb7406f96796546.long-type-9927225111786062105.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `impl_fn` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `<<Args as Tuple>::BaseFn as WithSafetyImpl<...>>::F: WithAbiImpl<...>` is not satisfied
+   --> src\impl.rs:121:44
+    |
+121 |               type F<Args: $crate::Tuple> = <<<Args::BaseFn as $crate::WithSafety<$crate::safety!($safety)>>::F as $crate::WithAbi<$crate::abi::$abi_ident>>::F as...
+    |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `conv::WithAbiImpl<EfiApi>` is not implemented for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F`
+...
+213 | / impl_fn! {
+214 | |     __arg_0: A, __arg_1: B, __arg_2: C, __arg_3: D, __arg_4: E, __arg_5: F
+215 | | }
+    | |_- in this macro invocation
+    |
+note: required for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F` to implement `conv::WithAbi<EfiApi>`
+   --> src\conv.rs:33:56
+    |
+ 33 | impl<Abi: abi::Abi, F: FnPtr + WithAbiImpl<Abi, Self>> WithAbi<Abi> for F {
+    |                                ----------------------  ^^^^^^^^^^^^     ^
+    |                                |
+    |                                unsatisfied trait bound introduced here
+    = note: the full name for the type has been written to 'E:\Code\Rust\fn-ptr\target\debug\deps\fn_ptr-acb7406f96796546.long-type-14204725915888704850.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `impl_fn` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `<<Args as Tuple>::BaseFn as WithSafetyImpl<...>>::F: WithAbiImpl<...>` is not satisfied
+   --> src\impl.rs:121:44
+    |
+121 |               type F<Args: $crate::Tuple> = <<<Args::BaseFn as $crate::WithSafety<$crate::safety!($safety)>>::F as $crate::WithAbi<$crate::abi::$abi_ident>>::F as...
+    |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `conv::WithAbiImpl<EfiApi>` is not implemented for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F`
+...
+213 | / impl_fn! {
+214 | |     __arg_0: A, __arg_1: B, __arg_2: C, __arg_3: D, __arg_4: E, __arg_5: F
+215 | | }
+    | |_- in this macro invocation
+    |
+note: required for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F` to implement `conv::WithAbi<EfiApi>`
+   --> src\conv.rs:33:56
+    |
+ 33 | impl<Abi: abi::Abi, F: FnPtr + WithAbiImpl<Abi, Self>> WithAbi<Abi> for F {
+    |                                ----------------------  ^^^^^^^^^^^^     ^
+    |                                |
+    |                                unsatisfied trait bound introduced here
+    = note: the full name for the type has been written to 'E:\Code\Rust\fn-ptr\target\debug\deps\fn_ptr-acb7406f96796546.long-type-6772600513424661085.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `impl_fn` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `<<Args as Tuple>::BaseFn as WithSafetyImpl<...>>::F: WithAbiImpl<...>` is not satisfied
+   --> src\impl.rs:121:44
+    |
+121 |               type F<Args: $crate::Tuple> = <<<Args::BaseFn as $crate::WithSafety<$crate::safety!($safety)>>::F as $crate::WithAbi<$crate::abi::$abi_ident>>::F as...
+    |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `conv::WithAbiImpl<EfiApi>` is not implemented for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F`
+...
+213 | / impl_fn! {
+214 | |     __arg_0: A, __arg_1: B, __arg_2: C, __arg_3: D, __arg_4: E, __arg_5: F
+215 | | }
+    | |_- in this macro invocation
+    |
+note: required for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F` to implement `conv::WithAbi<EfiApi>`
+   --> src\conv.rs:33:56
+    |
+ 33 | impl<Abi: abi::Abi, F: FnPtr + WithAbiImpl<Abi, Self>> WithAbi<Abi> for F {
+    |                                ----------------------  ^^^^^^^^^^^^     ^
+    |                                |
+    |                                unsatisfied trait bound introduced here
+    = note: the full name for the type has been written to 'E:\Code\Rust\fn-ptr\target\debug\deps\fn_ptr-acb7406f96796546.long-type-11533195666208857984.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `impl_fn` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `<<Args as Tuple>::BaseFn as WithSafetyImpl<...>>::F: WithAbiImpl<...>` is not satisfied
+   --> src\impl.rs:121:44
+    |
+121 |               type F<Args: $crate::Tuple> = <<<Args::BaseFn as $crate::WithSafety<$crate::safety!($safety)>>::F as $crate::WithAbi<$crate::abi::$abi_ident>>::F as...
+    |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `conv::WithAbiImpl<EfiApi>` is not implemented for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F`
+...
+213 | / impl_fn! {
+214 | |     __arg_0: A, __arg_1: B, __arg_2: C, __arg_3: D, __arg_4: E, __arg_5: F
+215 | | }
+    | |_- in this macro invocation
+    |
+note: required for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F` to implement `conv::WithAbi<EfiApi>`
+   --> src\conv.rs:33:56
+    |
+ 33 | impl<Abi: abi::Abi, F: FnPtr + WithAbiImpl<Abi, Self>> WithAbi<Abi> for F {
+    |                                ----------------------  ^^^^^^^^^^^^     ^
+    |                                |
+    |                                unsatisfied trait bound introduced here
+    = note: the full name for the type has been written to 'E:\Code\Rust\fn-ptr\target\debug\deps\fn_ptr-acb7406f96796546.long-type-14568257555814653465.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `impl_fn` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `<<Args as Tuple>::BaseFn as WithSafetyImpl<...>>::F: WithAbiImpl<...>` is not satisfied
+   --> src\impl.rs:121:44
+    |
+121 |               type F<Args: $crate::Tuple> = <<<Args::BaseFn as $crate::WithSafety<$crate::safety!($safety)>>::F as $crate::WithAbi<$crate::abi::$abi_ident>>::F as...
+    |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `conv::WithAbiImpl<EfiApi>` is not implemented for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F`
+...
+213 | / impl_fn! {
+214 | |     __arg_0: A, __arg_1: B, __arg_2: C, __arg_3: D, __arg_4: E, __arg_5: F
+215 | | }
+    | |_- in this macro invocation
+    |
+note: required for `<<Args as tuple::Tuple>::BaseFn as conv::WithSafetyImpl<Unsafe>>::F` to implement `conv::WithAbi<EfiApi>`
+   --> src\conv.rs:33:56
+    |
+ 33 | impl<Abi: abi::Abi, F: FnPtr + WithAbiImpl<Abi, Self>> WithAbi<Abi> for F {
+    |                                ----------------------  ^^^^^^^^^^^^     ^
+    |                                |
+    |                                unsatisfied trait bound introduced here
+    = note: the full name for the type has been written to 'E:\Code\Rust\fn-ptr\target\debug\deps\fn_ptr-acb7406f96796546.long-type-8700587519034644055.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `impl_fn` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `fn-ptr` (lib) due to 28 previous errors

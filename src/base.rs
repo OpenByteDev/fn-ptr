@@ -20,8 +20,6 @@ ffi_opaque::opaque! {
 /// Type alias for a raw untyped function pointer.
 pub type UntypedFnPtr = *const OpaqueFn;
 
-cfg_tt::cfg_tt! {}
-
 cfg_tt::cfg_tt! {
 /// Marker trait for all function pointers.
 pub trait FnPtr:
@@ -66,6 +64,7 @@ pub trait FnPtr:
     #[cfg(has_abi_sysv64)](+ WithAbiImpl<abi::SysV64Unwind>)
     #[cfg(has_abi_win64)](+ WithAbiImpl<abi::Win64>)
     #[cfg(has_abi_win64)](+ WithAbiImpl<abi::Win64Unwind>)
+    #[cfg(has_abi_efiapi)](+ WithAbiImpl<abi::EfiApi>)
 {
     /// The argument types as a tuple.
     type Args: Tuple;
