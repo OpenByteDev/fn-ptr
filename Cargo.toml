@@ -1,6 +1,6 @@
 [package]
 name = "fn-ptr"
-version = "0.9.0"
+version = "0.9.1"
 description = "A utility crate for introspecting and rewriting function pointer types at compile time."
 repository = "https://github.com/OpenByteDev/fn-ptr"
 documentation = "https://docs.rs/fn-ptr"
