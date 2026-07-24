@@ -25,9 +25,9 @@ fn main() {
 
     if t.arch == Arch::X86_64 {
         if t.os == Os::Windows {
-            cargo_emit::rustc_cfg!("has_abi_win64")
+            cargo_emit::rustc_cfg!("has_abi_win64");
         } else {
-            cargo_emit::rustc_cfg!("has_abi_sysv64")
+            cargo_emit::rustc_cfg!("has_abi_sysv64");
         }
     }
 
