@@ -13,7 +13,7 @@ keywords = ["fn", "function", "fn_traits"]
 [dependencies]
 ffi-opaque = "2.0"
 konst = { version = "0.4", features = ["cmp"], default-features = false }
-cfg-tt = "0.3"
+cfg-tt = "0.4"
 
 [dev-dependencies]
 static_assertions = "1.1"
